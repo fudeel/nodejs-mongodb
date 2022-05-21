@@ -8,7 +8,6 @@ const { sendEmail } = require("./helpers/mailer");
 const User = require("./user.model");
 
 
-const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 const CHARACTER_SET =
@@ -39,7 +38,7 @@ exports.Signup = async (req, res) => {
     }
 
     //Check if the email has been already registered.
-    var user = await User.findOne({
+    const user = await User.findOne({
       email: result.value.email,
     });
 
@@ -62,8 +61,7 @@ exports.Signup = async (req, res) => {
 
     let expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
 
-    const link = process.env.BASE_HOST + "/api/v1/users/auth/activate?email=" + result.value.email + "&code=" + code;
-    const sendVerificationLink = await sendEmail(result.value.email, code, "activate", link);
+    const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
 
     if (sendVerificationLink.error) {
       return res.status(500).json({

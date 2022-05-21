@@ -15,9 +15,14 @@ async function sendEmail(email, code, action, link) {
 
   const activation_body = `<!DOCTYPE> 
     <html>
+    <style>
+    p.bolder {
+        font-weight: bolder;
+    }
+</style>
       <body>
-        <p>Your activation link is: </p> 
-        <a href="${link}">${link}</a>
+        <p>The activation code for ${email} is: </p> 
+        <p class="bolder">${code}</p>
       </body>
     </html>`;
 
