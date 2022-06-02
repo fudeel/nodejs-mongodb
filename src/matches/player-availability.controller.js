@@ -10,6 +10,7 @@ const playerAvailabilitySchema = Joi.object().keys({
     max_lat: Joi.number().valid().required(),
     max_lng: Joi.number().valid().required(),
     user_rank: Joi.string().valid().required(),
+    max_distance: Joi.number().valid().required()
 });
 
 exports.AddPlayerToWaitingList = async (req, res) => {
@@ -18,9 +19,10 @@ exports.AddPlayerToWaitingList = async (req, res) => {
         userId: req.body.userId,
         phone_number: req.body.phone_number,
         email: req.body.email,
-        max_lat: distance.get_max_lat_max_lng_5_km(req.body.max_lat, req.body.max_lng).max_lat,
-        max_lng: distance.get_max_lat_max_lng_5_km(req.body.max_lat, req.body.max_lng).max_lng,
-        user_rank: req.body.user_rank
+        max_lat: distance.get_max_lat_max_lng(req.body.max_lat, req.body.max_lng, req.body.max_distance).max_lat,
+        max_lng: distance.get_max_lat_max_lng(req.body.max_lat, req.body.max_lng, req.body.max_distance).max_lng,
+        user_rank: req.body.user_rank,
+        max_distance: req.body.max_distance
     }
     try {
         const result = playerAvailabilitySchema.validate(body);
