@@ -33,7 +33,7 @@ exports.AddPlayerToWaitingList = async (req, res) => {
         const user = await playerAvailabilityModel.findOne({
             $and: [{
                 email: result.value.email,
-                date: result.value.date
+                userId: result.value.userId
             }]
         });
 
