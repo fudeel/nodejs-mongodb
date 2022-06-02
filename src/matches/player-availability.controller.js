@@ -14,7 +14,7 @@ const playerAvailabilitySchema = Joi.object().keys({
     user_rank: Joi.string().valid().required(),
 });
 
-exports.AddPlayerAvailabilityToSelectedDateArray = async (req, res) => {
+exports.AddPlayerToWaitingList = async (req, res) => {
     console.log('req: ', req.body);
     try {
         const result = playerAvailabilitySchema.validate(req.body);

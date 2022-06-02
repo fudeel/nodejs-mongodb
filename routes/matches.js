@@ -5,7 +5,7 @@ const cleanBody = require("../middlewares/cleanbody");
 
 const playerAvailabilityController = require("../src/matches/player-availability.controller");
 
-router.post("/add-player-availability-to-selected-date-array", cleanBody, playerAvailabilityController.AddPlayerAvailabilityToSelectedDateArray);
+router.post("/add-player-to-waiting-list", cleanBody, playerAvailabilityController.AddPlayerToWaitingList);
 
 
 
