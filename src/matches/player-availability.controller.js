@@ -1,23 +1,29 @@
 const Joi = require("joi");
 require("dotenv").config();
 const playerAvailabilityModel = require("./player-availability.model");
-const MongoClient = require('mongoose').MongoClient;
-
-
+const distance = require("../../utils/distance")
 //Validate user schema
 const playerAvailabilitySchema = Joi.object().keys({
     userId: Joi.string().valid().required(),
     phone_number: Joi.string().valid().required(),
     email: Joi.string().email({ minDomainSegments: 2 }),
-    max_lat: Joi.string().valid().required(),
-    max_lng: Joi.string().valid().required(),
+    max_lat: Joi.number().valid().required(),
+    max_lng: Joi.number().valid().required(),
     user_rank: Joi.string().valid().required(),
 });
 
 exports.AddPlayerToWaitingList = async (req, res) => {
-    console.log('req: ', req.body);
+
+    const body = {
+        userId: req.body.userId,
+        phone_number: req.body.phone_number,
+        email: req.body.email,
+        max_lat: distance.get_max_lat_max_lng_5_km(req.body.max_lat, req.body.max_lng).max_lat,
+        max_lng: distance.get_max_lat_max_lng_5_km(req.body.max_lat, req.body.max_lng).max_lng,
+        user_rank: req.body.user_rank
+    }
     try {
-        const result = playerAvailabilitySchema.validate(req.body);
+        const result = playerAvailabilitySchema.validate(body);
         if (result.error) {
             console.log(result.error.message);
             return res.json({
@@ -50,7 +56,7 @@ exports.AddPlayerToWaitingList = async (req, res) => {
 
         if (addUserToWaitingList) {
             console.log("--> Adding user to waiting list");
-            const userOnWaitingList = new playerAvailabilityModel(req.body);
+            const userOnWaitingList = new playerAvailabilityModel(body);
             userOnWaitingList.save(() => {
                 console.log('saved');
             });
