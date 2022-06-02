@@ -8,6 +8,7 @@ require("dotenv").config();
 const PORT = process.env.PORT || 5000;
 
 const authRoutes = require("./routes/users");
+const matchRoutes = require("./routes/matches");
 
 const BASE_URL = "/api/v1"
 
@@ -43,6 +44,7 @@ app.get("/ping", (req, res) => {
 });
 
 app.use( BASE_URL + "/users", authRoutes);
+app.use( BASE_URL + "/matches", matchRoutes);
 
 app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
