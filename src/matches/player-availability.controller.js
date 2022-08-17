@@ -7,25 +7,17 @@ const playerAvailabilitySchema = Joi.object().keys({
     userId: Joi.string().valid().required(),
     phone_number: Joi.string().valid().required(),
     email: Joi.string().email({ minDomainSegments: 2 }),
-    max_lat: Joi.number().valid().required(),
-    max_lng: Joi.number().valid().required(),
+    lat: Joi.number().valid().required(),
+    lng: Joi.number().valid().required(),
     user_rank: Joi.string().valid().required(),
-    max_distance: Joi.number().valid().required()
+    max_distance: Joi.number().valid().required(),
+    selected_date: Joi.date().valid().required()
 });
 
 exports.AddPlayerToWaitingList = async (req, res) => {
 
-    const body = {
-        userId: req.body.userId,
-        phone_number: req.body.phone_number,
-        email: req.body.email,
-        max_lat: distance.get_max_lat_max_lng(req.body.max_lat, req.body.max_lng, req.body.max_distance).max_lat,
-        max_lng: distance.get_max_lat_max_lng(req.body.max_lat, req.body.max_lng, req.body.max_distance).max_lng,
-        user_rank: req.body.user_rank,
-        max_distance: req.body.max_distance
-    }
     try {
-        const result = playerAvailabilitySchema.validate(body);
+        const result = playerAvailabilitySchema.validate(req.body);
         if (result.error) {
             console.log(result.error.message);
             return res.json({
@@ -41,7 +33,8 @@ exports.AddPlayerToWaitingList = async (req, res) => {
         const user = await playerAvailabilityModel.findOne({
             $and: [{
                 email: result.value.email,
-                userId: result.value.userId
+                userId: result.value.userId,
+                selected_date: result.value.selected_date
             }]
         });
 
@@ -58,7 +51,7 @@ exports.AddPlayerToWaitingList = async (req, res) => {
 
         if (addUserToWaitingList) {
             console.log("--> Adding user to waiting list");
-            const userOnWaitingList = new playerAvailabilityModel(body);
+            const userOnWaitingList = new playerAvailabilityModel(req.body);
             userOnWaitingList.save(() => {
                 console.log('saved');
             });
