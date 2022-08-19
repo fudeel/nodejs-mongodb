@@ -1,7 +1,15 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-var cors = require('cors')
+var cors = require('cors');
+const admin = require('firebase-admin');
+
+
+let serviceAccount = require('./service_account.json');
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
 
 
 require("dotenv").config();
@@ -43,8 +51,34 @@ app.get("/ping", (req, res) => {
     });
 });
 
+
+
+
+function verifyIdToken(req, res, next) {
+    let idToken = req.headers.idtoken;
+
+    console.log('request headers: ', req.headers);
+
+    console.log('token: ', idToken);
+    console.log('token: ', idToken);
+    console.log('token: ', idToken);
+    console.log('token: ', idToken);
+
+    return admin.auth().verifyIdToken(idToken)
+        .then((decodedToken) => {
+            const uid = decodedToken.uid;
+            console.log({'Decoded token': decodedToken, 'uid': uid});
+            next();
+
+        })
+        .catch((err) => {
+            console.log('error: ', err);
+            next();
+        })
+}
+
 app.use( BASE_URL + "/users", authRoutes);
-app.use( BASE_URL + "/matches", matchRoutes);
+app.use( BASE_URL + "/matches", matchRoutes, verifyIdToken);
 
 app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
