@@ -2,14 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 var cors = require('cors');
-const admin = require('firebase-admin');
+const admin = require('./utils/config');
 
 
-let serviceAccount = require('./service_account.json');
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
 
 
 require("dotenv").config();
@@ -55,21 +50,13 @@ app.get("/ping", (req, res) => {
 
 
 function verifyIdToken(req, res, next) {
-    let idToken = req.headers.idtoken;
-
-    console.log('request headers: ', req.headers);
-
-    console.log('token: ', idToken);
-    console.log('token: ', idToken);
-    console.log('token: ', idToken);
-    console.log('token: ', idToken);
+    let idToken = req.headers['idtoken'];
 
     return admin.auth().verifyIdToken(idToken)
         .then((decodedToken) => {
             const uid = decodedToken.uid;
             console.log({'Decoded token': decodedToken, 'uid': uid});
             next();
-
         })
         .catch((err) => {
             console.log('error: ', err);
