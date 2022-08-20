@@ -1,7 +1,4 @@
-const Joi = require("joi");
 require("dotenv").config();
-const { v4: uuid } = require("uuid");
-const { customAlphabet: generate } = require("nanoid");
 const axios = require('axios');
 const {GOOGLE_API_BASE_URL} = require("../../utils/constants");
 
