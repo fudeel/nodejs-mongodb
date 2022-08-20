@@ -12,8 +12,6 @@ router.post(baseUrl + "/signup", cleanBody, AuthController.Signup);
 
 router.patch(baseUrl + "/activate", cleanBody, AuthController.Activate);
 
-router.post(baseUrl + "/login", cleanBody, AuthController.Login);
-
 router.patch(baseUrl + "/recover", cleanBody, AuthController.recover);
 
 router.patch(baseUrl + "/reset", cleanBody, AuthController.ResetPassword);

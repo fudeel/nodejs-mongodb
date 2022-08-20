@@ -10,7 +10,7 @@ const admin = require('./utils/config');
 require("dotenv").config();
 const PORT = process.env.PORT || 5000;
 
-const authRoutes = require("./routes/users");
+const authRoutes = require("./routes/authentication");
 const matchRoutes = require("./routes/matches");
 
 const BASE_URL = "/api/v1"
@@ -64,9 +64,12 @@ function verifyIdToken(req, res, next) {
         })
 }
 
-app.use( BASE_URL + "/users", authRoutes);
+app.use( BASE_URL + "/authentication", authRoutes);
 app.use( BASE_URL + "/matches", matchRoutes, verifyIdToken);
 
 app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
 });
+
+
+module.exports = app;
