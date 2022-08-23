@@ -5,13 +5,13 @@
  * In this file there are only authentication/account and Google OAuth related routes
  */
 
-const express = require("express");
+import express from "express";
+import {cleanBody} from "../middlewares/cleanbody.js";
+import {LoginWithEmailAndPassword} from "../src/authentication/authentication.js";
+
 const router = express.Router();
-const cleanBody = require("../middlewares/cleanbody");
-const AuthController = require("../src/authentication/authentication");
+
+router.post('/oauth-login', cleanBody, LoginWithEmailAndPassword);
 
 
-router.post('/oauth-login', cleanBody, AuthController.LoginWithEmailAndPassword);
-
-
-module.exports = router;
+export default router;

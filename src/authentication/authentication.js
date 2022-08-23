@@ -1,9 +1,9 @@
-const axios = require('axios');
-const {GOOGLE_API_BASE_URL} = require("../../utils/constants");
+import axios from "axios";
+import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
 
 const accountURL = '/accounts';
 
-exports.LoginWithEmailAndPassword = async (req, res) => {
+export const LoginWithEmailAndPassword = async (req, res) => {
     const data = {
         email: req.body.email,
         password: req.body.password,

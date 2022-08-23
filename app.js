@@ -1,31 +1,25 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-var cors = require('cors');
-const admin = require('./utils/config');
-require("dotenv").config();
+import express from 'express';
+import mongoose from "mongoose";
+import bodyParser from "body-parser";
+import cors from 'cors';
+import admin from './utils/config.js';
+import authRoutes from './routes/authentication.js';
 
 const PORT = process.env.PORT || 5000;
-
-const authRoutes = require("./routes/authentication");
-const matchRoutes = require("./routes/matches");
 
 const BASE_URL = "/api/v1"
 
 console.log('BASE_HOST: ', process.env.BASE_HOST);
 
-mongoose
-    .connect(process.env.MONGODB_URI, {
-        dbName: process.env.DB_NAME,
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then(() => {
-        console.log("Database connection Success.");
-    })
-    .catch((err) => {
-        console.error("Mongo Connection Error", err);
-    });
+mongoose.connect(process.env.MONGODB_URI, {
+    dbName: process.env.DB_NAME,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}, () => {
+    console.log("Database connection Success.");
+}, (onerror) => {
+    console.error("Mongo Connection Error", onerror);
+})
 
 const app = express();
 
@@ -46,7 +40,7 @@ app.get("/ping", (req, res) => {
 
 
 
-function verifyIdToken(req, res, next) {
+const verifyIdToken = (req, res, next) => {
     let idToken = req.headers['idtoken'];
 
     return admin.auth().verifyIdToken(idToken)
@@ -62,11 +56,11 @@ function verifyIdToken(req, res, next) {
 }
 
 app.use( BASE_URL + "/authentication", authRoutes);
-app.use( BASE_URL + "/matches", matchRoutes, verifyIdToken);
+/*
+* usage fro protected routes
+* protected route: app.use( BASE_URL + "/protected-route", protectedRoutes, verifyIdToken);
+* */
 
 app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
 });
-
-
-module.exports = app;
