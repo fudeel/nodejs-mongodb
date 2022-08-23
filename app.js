@@ -5,10 +5,6 @@ var cors = require('cors');
 const admin = require('./utils/config');
 require("dotenv").config();
 
-
-
-
-require("dotenv").config();
 const PORT = process.env.PORT || 5000;
 
 const authRoutes = require("./routes/authentication");
