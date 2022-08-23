@@ -1,4 +1,3 @@
-require("dotenv").config();
 const axios = require('axios');
 const {GOOGLE_API_BASE_URL} = require("../../utils/constants");
 
@@ -11,8 +10,6 @@ exports.LoginWithEmailAndPassword = async (req, res) => {
         returnSecureToken: true
     }
     try {
-        const axios = require('axios');
-
         await axios
             .post(GOOGLE_API_BASE_URL + accountURL + ":signInWithPassword"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
             .then(r => {
