@@ -7,11 +7,12 @@
 
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody.js";
-import {LoginWithEmailAndPassword} from "../src/authentication/authentication.js";
+import {LoginWithEmailAndPassword, RegisterWithEmailAndPassword} from "../src/authentication/authentication.js";
 
 const router = express.Router();
 
 router.post('/oauth-login', cleanBody, LoginWithEmailAndPassword);
+router.post('/oauth-register', cleanBody, RegisterWithEmailAndPassword);
 
 
 export default router;

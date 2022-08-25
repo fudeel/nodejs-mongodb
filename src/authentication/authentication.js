@@ -13,6 +13,7 @@ export const LoginWithEmailAndPassword = async (req, res) => {
         await axios
             .post(GOOGLE_API_BASE_URL + accountURL + ":signInWithPassword"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
             .then(r => {
+                console.log('Login successfully\n --:', r.data['email']);
                 res.send(r.data);
             })
             .catch(error => {
@@ -24,3 +25,27 @@ export const LoginWithEmailAndPassword = async (req, res) => {
         res.send(err);
     }
 };
+
+
+export const RegisterWithEmailAndPassword = async (req, res) => {
+    const data = {
+        email: req.body.email,
+        password: req.body.password,
+        returnSecureToken: true
+    }
+    try {
+        await axios
+            .post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
+            .then(r => {
+                res.send(r.data);
+            })
+            .catch(error => {
+                console.error(error.message);
+                res.send(error.message);
+            });
+
+    } catch (err) {
+        console.log('There is an error on the system. Try later');
+        res.send('There is an error on the system. Try later \n' + {err} );
+    }
+}
