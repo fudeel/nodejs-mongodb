@@ -37,24 +37,6 @@ app.get("/ping", (req, res) => {
     });
 });
 
-
-
-
-const verifyIdToken = (req, res, next) => {
-    let idToken = req.headers['idtoken'];
-
-    return admin.auth().verifyIdToken(idToken)
-        .then((decodedToken) => {
-            const uid = decodedToken.uid;
-            console.log({'Decoded token': decodedToken, 'uid': uid});
-            next();
-        })
-        .catch((err) => {
-            console.log('error: ', err);
-            next();
-        })
-}
-
 app.use( BASE_URL + "/authentication", authRoutes);
 /*
 * usage fro protected routes

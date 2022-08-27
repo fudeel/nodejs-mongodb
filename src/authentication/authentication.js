@@ -17,6 +17,7 @@ export const LoginWithEmailAndPassword = async (req, res) => {
             })
             .catch(error => {
                 console.error(error);
+                res.send("User not found or incorrect email/password. ");
             });
 
     } catch (err) {
