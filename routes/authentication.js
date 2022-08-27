@@ -14,5 +14,4 @@ const router = express.Router();
 router.post('/oauth-login', cleanBody, LoginWithEmailAndPassword);
 router.post('/oauth-register', cleanBody, RegisterWithEmailAndPassword);
 
-
 export default router;

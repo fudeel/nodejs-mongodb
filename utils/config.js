@@ -15,7 +15,7 @@ const environment = dotenv.config({path: pathToEnv});
 console.log('TYPE: ', process.env.TYPE);
 console.log('PROJECT ID: ', process.env.PROJECT_ID);
 
-const serviceAccount = {
+export const serviceAccount = {
     type: process.env.TYPE,
     project_id: process.env.PROJECT_ID,
     private_key_id: process.env.PRIVATE_KEY_ID,

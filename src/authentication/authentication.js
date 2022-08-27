@@ -1,6 +1,5 @@
 import axios from "axios";
 import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
-
 const accountURL = '/accounts';
 
 export const LoginWithEmailAndPassword = async (req, res) => {
@@ -37,11 +36,12 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
         await axios
             .post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
             .then(r => {
+                console.log('-- New user created with email: ', data.email);
                 res.send(r.data);
             })
             .catch(error => {
-                console.error(error.message);
-                res.send(error.message);
+                console.error("-- ", error);
+                res.send("Email already used or there's an error in our systems.");
             });
 
     } catch (err) {
