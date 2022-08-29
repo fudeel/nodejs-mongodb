@@ -11,7 +11,7 @@ const CHARACTER_SET =
 
 const REFERRAL_CODE_LENGTH = 8;
 
-const referralCode = customAlphabet.generate(CHARACTER_SET, REFERRAL_CODE_LENGTH);
+const referralCode = customAlphabet(CHARACTER_SET, REFERRAL_CODE_LENGTH);
 
 //Validate user schema
 const userSchema = Joi.object().keys({
@@ -49,7 +49,7 @@ export const Signup = async (req, res) => {
 
 
          //Generate unique id for the user.
-        result.value.userId = v4.uuid();
+        result.value.userId = v4();
 
         delete result.value.confirmPassword;
         result.value.password = hash;
