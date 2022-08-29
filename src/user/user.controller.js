@@ -101,7 +101,7 @@ export const Signup = async (req, res) => {
 
 export const Activate = async (req, res) => {
     try {
-        const { email, code } = req.query;
+        const { email, code } = req.body;
         if (!email || !code) {
             return res.json({
                 error: true,
