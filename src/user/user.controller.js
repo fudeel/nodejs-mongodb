@@ -23,82 +23,91 @@ const userSchema = Joi.object().keys({
 });
 
 export const Signup = async (req, res) => {
-    const result = await userSchema.validate(req.body);
-    if (result.error) {
-        return await res.status(500).json({
-            error: true,
-            message: result.error.message,
+    try {
+        const result = await userSchema.validate(req.body);
+        if (result.error) {
+            return await res.status(500).json({
+                error: true,
+                message: result.error.message,
+            });
+        }
+
+        await User.findOne({
+            email: result.value.email,
+        }).then( (user) => {
+            if (user) {
+                return res.status(500).json({
+                    error: true,
+                    message: "Email already exists.",
+                });
+            }
         });
-    }
 
-    await User.findOne({
-        email: result.value.email,
-    }).then( (user) => {
-        if (user) {
+        await User.findOne({
+            username: result.value.username,
+        }).then( (user) => {
+            if (user) {
+                return res.status(500).json({
+                    error: true,
+                    message: "username already exists.",
+                });
+            }
+        });
+
+
+        const hash = await hashPassword(result.value.password);
+
+
+        //Generate unique id for the user.
+        result.value.userId = v4();
+
+        delete result.value.confirmPassword;
+        result.value.password = hash;
+
+        const code = Math.floor(100000 + Math.random() * 900000);
+
+        let expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
+
+        const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
+
+        if (sendVerificationLink.error) {
             return res.status(500).json({
                 error: true,
-                message: "Email already exists.",
+                message: "Couldn't send verification email.",
             });
         }
-    });
+        result.value.emailToken = code;
+        result.value.emailTokenExpires = new Date(expiry);
 
-    await User.findOne({
-        username: result.value.username,
-    }).then( (user) => {
-        if (user) {
-            return res.status(500).json({
-                error: true,
-                message: "username already exists.",
+        //Check if referred and validate code.
+        if (result.value.hasOwnProperty("referrer")) {
+            let referrer = await User.findOne({
+                referralCode: result.value.referrer,
             });
+            if (!referrer) {
+                return res.status(400).send({
+                    error: true,
+                    message: "Invalid referral code.",
+                });
+            }
         }
-    });
+        result.value.referralCode = referralCode();
+        const newUser = await new User(result.value);
+        await newUser.save();
 
+        return res.status(200).json({
+            success: true,
+            message: "Registration Success",
+            referralCode: result.value.referralCode,
+        });
 
-    const hash = await hashPassword(result.value.password);
-
-
-    //Generate unique id for the user.
-    result.value.userId = v4();
-
-    delete result.value.confirmPassword;
-    result.value.password = hash;
-
-    const code = Math.floor(100000 + Math.random() * 900000);
-
-    let expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
-
-    const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
-
-    if (sendVerificationLink.error) {
+    } catch (error) {
+        console.error("signup-error", error);
         return res.status(500).json({
             error: true,
-            message: "Couldn't send verification email.",
+            message: "Cannot Register",
         });
     }
-    result.value.emailToken = code;
-    result.value.emailTokenExpires = new Date(expiry);
-
-    //Check if referred and validate code.
-    if (result.value.hasOwnProperty("referrer")) {
-        let referrer = await User.findOne({
-            referralCode: result.value.referrer,
-        });
-        if (!referrer) {
-            return res.status(400).send({
-                error: true,
-                message: "Invalid referral code.",
-            });
-        }
-    }
-    result.value.referralCode = referralCode();
-    const newUser = await new User(result.value);
-    await newUser.save();
-
-    return res.status(200).json({
-        success: true,
-        message: "Registration Success",
-        referralCode: result.value.referralCode,
-    });
 };
 
 export const Activate = async (req, res) => {
