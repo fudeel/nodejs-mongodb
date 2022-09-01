@@ -18,85 +18,89 @@ const userSchema = Joi.object().keys({
     email: Joi.string().email({ minDomainSegments: 2 }),
     password: Joi.string().required().min(4),
     confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
+    username: Joi.string().required().min(4).max(12),
     referrer: Joi.string(),
 });
 
 export const Signup = async (req, res) => {
-    try {
-        const result = userSchema.validate(req.body);
-        if (result.error) {
-            console.log(result.error.message);
-            return res.json({
-                error: true,
-                status: 400,
-                message: result.error.message,
-            });
-        }
-
-        //Check if the email has been already registered.
-        const user = await User.findOne({
-            email: result.value.email,
-        });
-
-        if (user) {
-            return res.json({
-                error: true,
-                message: "Email is already in use",
-            });
-        }
-
-        const hash = await hashPassword(result.value.password);
-
-
-         //Generate unique id for the user.
-        result.value.userId = v4();
-
-        delete result.value.confirmPassword;
-        result.value.password = hash;
-
-        const code = Math.floor(100000 + Math.random() * 900000);
-
-        let expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
-
-        const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
-
-        if (sendVerificationLink.error) {
-            return res.status(500).json({
-                error: true,
-                message: "Couldn't send verification email.",
-            });
-        }
-        result.value.emailToken = code;
-        result.value.emailTokenExpires = new Date(expiry);
-
-        //Check if referred and validate code.
-        if (result.value.hasOwnProperty("referrer")) {
-            let referrer = await User.findOne({
-                referralCode: result.value.referrer,
-            });
-            if (!referrer) {
-                return res.status(400).send({
-                    error: true,
-                    message: "Invalid referral code.",
-                });
-            }
-        }
-        result.value.referralCode = referralCode();
-        const newUser = await new User(result.value);
-        await newUser.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Registration Success",
-            referralCode: result.value.referralCode,
-        });
-    } catch (error) {
-        console.error("signup-error", error);
-        return res.status(500).json({
+    const result = userSchema.validate(req.body);
+    if (result.error) {
+        console.log("Error 01: ", result.error.message);
+        return res.json({
             error: true,
-            message: "Cannot Register",
+            status: 400,
+            message: result.error.message,
         });
     }
+
+    await User.findOne({
+        email: result.value.email,
+    }).then( (user) => {
+        if (user) {
+            return res.status(500).json({
+                error: true,
+                message: "Email already exists.",
+            });
+        }
+    });
+
+    await User.findOne({
+        username: result.value.username,
+    }).then( (user) => {
+        if (user) {
+            return res.status(500).json({
+                error: true,
+                message: "username already exists.",
+            });
+        }
+    });
+
+
+    const hash = await hashPassword(result.value.password);
+
+
+    //Generate unique id for the user.
+    result.value.userId = v4();
+
+    delete result.value.confirmPassword;
+    result.value.password = hash;
+
+    const code = Math.floor(100000 + Math.random() * 900000);
+
+    let expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
+
+    const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
+
+    if (sendVerificationLink.error) {
+        return res.status(500).json({
+            error: true,
+            message: "Couldn't send verification email.",
+        });
+    }
+    result.value.emailToken = code;
+    result.value.emailTokenExpires = new Date(expiry);
+
+    //Check if referred and validate code.
+    if (result.value.hasOwnProperty("referrer")) {
+        let referrer = await User.findOne({
+            referralCode: result.value.referrer,
+        });
+        if (!referrer) {
+            return res.status(400).send({
+                error: true,
+                message: "Invalid referral code.",
+            });
+        }
+    }
+    result.value.referralCode = referralCode();
+    const newUser = await new User(result.value);
+    await newUser.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Registration Success",
+        referralCode: result.value.referralCode,
+    });
 };
 
 export const Activate = async (req, res) => {

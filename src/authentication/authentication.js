@@ -33,22 +33,22 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
     const data = {
         email: req.body.email,
         password: req.body.password,
+        confirmPassword: req.body.confirmPassword,
+        username: req.body.username,
         returnSecureToken: true
     }
     try {
-        await axios
-            .post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
-            .then(async r => {
-                await console.log('-- New user created with email: ', data.email);
-                await Signup(req, res);
-            })
-            .catch(error => {
-                console.error("-- ", error);
-                res.send("Email already used or there's an error in our systems.");
-            });
+        await Signup(req, res).then(() => {
+            axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
+                .then(() => {
+                    console.log('-- New user created with email: ', data.email);
+                })
+                .catch(error => {
+                    console.error("-- ", error);
+                });
+        });
 
     } catch (err) {
-        console.log('There is an error on the system. Try later');
-        res.send('There is an error on the system. Try later \n' + {err} );
+        console.log('Error: ', err);
     }
 }
