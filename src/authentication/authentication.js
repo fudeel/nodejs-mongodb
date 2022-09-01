@@ -37,8 +37,9 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
         username: req.body.username,
         returnSecureToken: true
     }
-    try {
-        await Signup(req, res).then(() => {
+
+    await Signup(req, res).then(async (r) => {
+        if (await r && r.statusCode !== 500) {
             axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
                 .then(() => {
                     console.log('-- New user created with email: ', data.email);
@@ -46,9 +47,7 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
                 .catch(error => {
                     console.error("-- ", error);
                 });
-        });
+        }
+    });
 
-    } catch (err) {
-        console.log('Error: ', err);
-    }
 }

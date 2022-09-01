@@ -23,12 +23,10 @@ const userSchema = Joi.object().keys({
 });
 
 export const Signup = async (req, res) => {
-    const result = userSchema.validate(req.body);
+    const result = await userSchema.validate(req.body);
     if (result.error) {
-        console.log("Error 01: ", result.error.message);
-        return res.json({
+        return await res.status(500).json({
             error: true,
-            status: 400,
             message: result.error.message,
         });
     }
