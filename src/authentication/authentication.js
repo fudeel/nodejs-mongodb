@@ -1,6 +1,8 @@
 import axios from "axios";
 import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
 import {Signup} from "../user/user.controller.js";
+import * as stream from "stream";
+import {verifyIdToken} from "../../utils/verify-token.js";
 
 const accountURL = '/accounts';
 
@@ -50,4 +52,13 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
         }
     });
 
+}
+
+export const VerifyAuthenticationToken = async (req, res, next) => {
+    try {
+        await verifyIdToken(req, res, next)
+    } catch (e) {
+        console.log('Error on verify authentication token: ', e);
+        res.status(403).send(false)
+    }
 }

@@ -7,11 +7,16 @@
 
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody.js";
-import {LoginWithEmailAndPassword, RegisterWithEmailAndPassword} from "../src/authentication/authentication.js";
+import {
+    LoginWithEmailAndPassword,
+    RegisterWithEmailAndPassword,
+    VerifyAuthenticationToken
+} from "../src/authentication/authentication.js";
 
 const router = express.Router();
 
 router.post('/oauth-login', cleanBody, LoginWithEmailAndPassword);
 router.post('/oauth-register', cleanBody, RegisterWithEmailAndPassword);
+router.get('/verify-token', cleanBody, VerifyAuthenticationToken);
 
 export default router;
