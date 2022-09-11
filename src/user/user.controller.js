@@ -18,7 +18,7 @@ const userSchema = Joi.object().keys({
     email: Joi.string().email({ minDomainSegments: 2 }),
     password: Joi.string().required().min(4),
     confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
-    username: Joi.string().required().min(4).max(12),
+    username: Joi.string().required().min(4).max(16),
     referrer: Joi.string(),
 });
 
