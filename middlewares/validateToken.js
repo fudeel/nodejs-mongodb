@@ -18,7 +18,6 @@ export async function validateToken(req, res, next) {
         let user = await User.findOne({
             accessToken: token,
         });
-        // console.log(token);
         if (!user) {
             result = {
                 error: true,

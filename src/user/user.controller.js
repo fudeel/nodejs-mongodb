@@ -24,11 +24,12 @@ const userSchema = Joi.object().keys({
 
 export const Signup = async (req, res) => {
     try {
+        let isError = false;
         const result = await userSchema.validate(req.body);
         if (result.error) {
             return await res.status(500).json({
                 error: true,
-                message: result.error.message,
+                message: result.error.message.toString(),
             });
         }
 
@@ -36,6 +37,7 @@ export const Signup = async (req, res) => {
             email: result.value.email,
         }).then( (user) => {
             if (user) {
+                isError = true;
                 return res.status(500).json({
                     error: true,
                     message: "Email already exists.",
@@ -47,6 +49,7 @@ export const Signup = async (req, res) => {
             username: result.value.username,
         }).then( (user) => {
             if (user) {
+                isError = true;
                 return res.status(500).json({
                     error: true,
                     message: "username already exists.",
@@ -68,14 +71,18 @@ export const Signup = async (req, res) => {
 
         let expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
 
-        const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
+        if (!isError) {
+            const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
 
-        if (sendVerificationLink.error) {
-            return res.status(500).json({
-                error: true,
-                message: "Couldn't send verification email.",
-            });
+            if (sendVerificationLink.error) {
+                return res.status(500).json({
+                    error: true,
+                    message: "Couldn't send verification email.",
+                });
+            }
         }
+
+
         result.value.emailToken = code;
         result.value.emailTokenExpires = new Date(expiry);
 
@@ -102,11 +109,7 @@ export const Signup = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("signup-error", error);
-        return res.status(500).json({
-            error: true,
-            message: "Cannot Register",
-        });
+        console.error("signup-error", error.message);
     }
 };
 

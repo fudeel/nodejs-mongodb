@@ -40,7 +40,7 @@ export async function sendEmail(email, code, action, link) {
             subject: action === "activate" ? "Complete your registration" : action === "reset" ? "Password reset" : "ok",
             html: action === "activate" ? activation_body : action === "reset" ? new_password_body : null
         }).then(info => {
-            console.log({info});
+            console.log("Activation error - info: ", {info});
         }).catch(console.error);
         return { error: false };
     } catch (error) {
