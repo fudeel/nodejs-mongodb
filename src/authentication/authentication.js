@@ -39,12 +39,19 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
 
     await Signup(req, res).then(async (r) => {
         if (await r && r.statusCode !== 500) {
-            axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
-                .then(() => {
-                    console.log('-- New user created with email: ', data.email);
+            axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
+                email: data.email,
+                password: data.password,
+                returnSecureToken: data.returnSecureToken
+            }), {
+                headers: {
+                    "Content-Type": "application/json",
+                }})
+                .then((res) => {
+                    console.log('New user created with email: ', data.email);
                 })
                 .catch(error => {
-                    console.error("-- ", error);
+                    console.error("Google API error: ", error);
                 });
         }
     });
