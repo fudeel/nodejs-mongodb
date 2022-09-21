@@ -33,6 +33,7 @@ export const Signup = async (req, res) => {
             });
         }
 
+        if (!isError)
         await User.findOne({
             email: result.value.email,
         }).then( (user) => {
@@ -45,6 +46,7 @@ export const Signup = async (req, res) => {
             }
         });
 
+        if (!isError)
         await User.findOne({
             username: result.value.username,
         }).then( (user) => {
@@ -87,7 +89,7 @@ export const Signup = async (req, res) => {
         result.value.emailTokenExpires = new Date(expiry);
 
         //Check if referred and validate code.
-        if (result.value.hasOwnProperty("referrer")) {
+        if (result.value.hasOwnProperty("referrer") && !isError) {
             let referrer = await User.findOne({
                 referralCode: result.value.referrer,
             });
@@ -102,6 +104,7 @@ export const Signup = async (req, res) => {
         const newUser = await new User(result.value);
         await newUser.save();
 
+        if (!isError)
         return res.status(200).json({
             success: true,
             message: "Registration Success",
@@ -109,7 +112,7 @@ export const Signup = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Catch error in Signup: ", error.message);
+        console.error("Catch error in Signup: ", error);
     }
 };
 
