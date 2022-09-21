@@ -39,9 +39,9 @@ export async function sendEmail(email, code, action, link) {
             to: email,
             subject: action === "activate" ? "Complete your registration" : action === "reset" ? "Password reset" : "ok",
             html: action === "activate" ? activation_body : action === "reset" ? new_password_body : null
-        }).then(info => {
-            console.log("Activation error - info: ", {info});
-        }).catch(console.error);
+        }).then(() => {}).catch(error => {
+            console.log('There was an error sending the email: ', error);
+        });
         return { error: false };
     } catch (error) {
         console.error("send-email-error", error);
