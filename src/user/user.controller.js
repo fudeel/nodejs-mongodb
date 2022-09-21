@@ -109,7 +109,7 @@ export const Signup = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("signup-error", error.message);
+        console.error("Catch error in Signup: ", error.message);
     }
 };
 
