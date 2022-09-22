@@ -47,8 +47,6 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
         return err;
     });
 
-    console.log('RECAPTCHA: ', recaptcha);
-
     if (recaptcha.success)
     await Signup(req, res).then(async (r) => {
         if (await r && r.statusCode !== 500) {
