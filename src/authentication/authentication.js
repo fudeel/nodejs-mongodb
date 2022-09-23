@@ -3,6 +3,7 @@ import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
 import {Signup} from "../user/user.controller.js";
 import {verifyIdToken} from "../../utils/verify-token.js";
 import {recaptchaV2Verification} from "../../utils/recaptcha-v2-verification.js";
+import {decodeToken} from "../../utils/decode-token.js";
 
 const accountURL = '/accounts';
 
@@ -62,7 +63,7 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
                 headers: {
                     "Content-Type": "application/json",
                 }})
-                .then((res) => {
+                .then(() => {
                     console.log('New user created with email: ', data.email);
                 })
                 .catch(error => {
@@ -80,6 +81,7 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
 export const VerifyAuthenticationToken = async (req, res, next) => {
     if (req.headers['idtoken'] !== null && req.headers['idtoken'] !== '') {
         try {
+            console.log('verifying token... ');
             await verifyIdToken(req, res, next)
         } catch (e) {
             res.status(403).send(false)

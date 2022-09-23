@@ -4,7 +4,8 @@ export const verifyIdToken = async (req, res, next) => {
     let idToken = req.headers['idtoken'];
 
     return await admin.auth().verifyIdToken(idToken)
-        .then(() => {
+        .then((decodedToken) => {
+            console.log({'Decoded token': decodedToken, 'uid': uid});
             res.status(200).send(true)
             next();
         })
