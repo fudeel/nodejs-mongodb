@@ -74,10 +74,13 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
 }
 
 export const VerifyAuthenticationToken = async (req, res, next) => {
-    try {
-        await verifyIdToken(req, res, next)
-    } catch (e) {
-        console.log('Error on verify authentication token: ', e);
-        res.status(403).send(false)
+    if (req.headers['idtoken'] !== null && req.headers['idtoken'] !== '') {
+        console.log('Valid header idtoken');
+        try {
+            await verifyIdToken(req, res, next)
+        } catch (e) {
+            console.log('Error on verify authentication token: ', e);
+            res.status(403).send(false)
+        }
     }
 }
