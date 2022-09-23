@@ -12,19 +12,22 @@ export const LoginWithEmailAndPassword = async (req, res) => {
         password: req.body.password,
         returnSecureToken: true
     }
+    if (data.email !== null && data.email !== '' && data.password !== null && data.password !== '')
     try {
         await axios
             .post(GOOGLE_API_BASE_URL + accountURL + ":signInWithPassword"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
             .then(r => {
                 res.send(r.data);
             })
-            .catch(error => {
-                console.error(error);
+            .catch((error) => {
+                console.error("Google login error: possible error -> User not found or incorrect email/password.");
                 res.send("User not found or incorrect email/password. ");
             });
 
     } catch (err) {
         res.send(err);
+    } else {
+        res.send({error: true, message: 'Incorrect email or password'});
     }
 };
 
