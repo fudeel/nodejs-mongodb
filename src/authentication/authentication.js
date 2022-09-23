@@ -17,6 +17,7 @@ export const LoginWithEmailAndPassword = async (req, res) => {
         await axios
             .post(GOOGLE_API_BASE_URL + accountURL + ":signInWithPassword"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
             .then(r => {
+                console.log(`user ${data.email} connected successfully`)
                 res.send(r.data);
             })
             .catch((error) => {
