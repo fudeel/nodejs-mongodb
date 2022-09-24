@@ -1,23 +1,13 @@
 import Joi from "joi";
-import {v4} from "uuid";
-import {customAlphabet} from "nanoid";
-import {generateJwt} from "../../utils/generateJwt.js";
-import {sendEmail} from "../../utils/mailer.js";
-import {comparePasswords, hashPassword, User} from "../../schemas/user-schema.js";
-import crypto from "crypto";
+import {User} from "../../schemas/user-schema.js";
 
-const CHARACTER_SET =
-    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-const REFERRAL_CODE_LENGTH = 8;
-
-const referralCode = customAlphabet(CHARACTER_SET, REFERRAL_CODE_LENGTH);
 
 export const checkUserActivation = async (req, res) => {
     const activationSchema = Joi.object().keys({
         email: Joi.string().email({ minDomainSegments: 2 })
     });
 
+    console.log("Let's check if the user is authenticated correctly and active");
     const result = await activationSchema.validate(req.body);
 
     if (result.error) {
@@ -52,10 +42,9 @@ export const checkUserActivation = async (req, res) => {
     if (!user.active) {
         console.log('Current user is not active');
         return false;
+    } else {
+        console.log('User is active');
+        return true;
     }
-
-
-
-
 
 }
