@@ -1,15 +1,16 @@
 import admin from "./config.js";
 
 export const verifyIdToken = async (req, res, next) => {
-    let idToken = req.headers['idtoken'];
+    const idToken = req.headers['idtoken'];
 
     return await admin.auth().verifyIdToken(idToken)
-        .then((decodedToken) => {
-            console.log({'Decoded token': decodedToken, 'uid': uid});
+        .then(async (decodedToken) => {
+            await console.log({'Decoded token': decodedToken});
             res.status(200).send(true)
             next();
         })
-        .catch(() => {
+        .catch((error) => {
+            console.log('error verify token: ', error);
             res.status(200).send(false)
             next();
         })
