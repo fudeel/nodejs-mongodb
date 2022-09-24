@@ -21,7 +21,7 @@ router.get(baseUrl + "/referred", validateToken, ReferredAccounts);
 
 router.get(baseUrl + "/logout", validateToken, Logout);
 
-router.post(baseUrl + "/verify-active", validateToken, checkUserActivation);
+router.post(baseUrl + "/verify-active", cleanBody, checkUserActivation);
 
 
 export default router;

@@ -1,8 +1,14 @@
 import Joi from "joi";
 import {User} from "../../schemas/user-schema.js";
+import {decodeToken} from "../../utils/decode-token.js";
 
 
 export const checkUserActivation = async (req, res) => {
+
+    const decodedEmail = await decodeToken(req.headers['idtoken']);
+
+    console.log('EMAIL: ', decodedEmail);
+
     const activationSchema = Joi.object().keys({
         email: Joi.string().email({ minDomainSegments: 2 })
     });
@@ -18,9 +24,7 @@ export const checkUserActivation = async (req, res) => {
     }
 
 
-    const email = req.body.email;
-
-    if (!email) {
+    if (!decodedEmail) {
         return res.status(400).json({
             error: true,
             message: "Email empty or not valid format",
@@ -28,7 +32,7 @@ export const checkUserActivation = async (req, res) => {
     }
 
     //1. Find if any account with that email exists in DB
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: decodedEmail });
 
     // NOT FOUND - Throw error
     if (!user) {
@@ -44,7 +48,10 @@ export const checkUserActivation = async (req, res) => {
         return false;
     } else {
         console.log('User is active');
-        return true;
+        return res.send({
+            success: true,
+            message: 'user is active'
+        });
     }
 
 }

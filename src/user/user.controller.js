@@ -134,9 +134,9 @@ export const Activate = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(400).json({
+            return res.status(200).json({
                 error: true,
-                message: "Invalid details",
+                message: "The code is not valid",
             });
         } else {
             if (user.active)
@@ -166,7 +166,7 @@ export const Activate = async (req, res) => {
     }
 };
 
-export const Login = async (req, res) => {
+export const Login = async (req, res, googleIdToken) => {
     try {
         const { email, password } = req.body;
 
@@ -190,9 +190,11 @@ export const Login = async (req, res) => {
 
         //2. Throw error if account is not activated
         if (!user.active) {
-            return res.status(400).json({
+            return res.status(200).json({
                 error: true,
                 message: "You must verify your email to activate your account",
+                activationError: true,
+                email: user.email
             });
         }
 
@@ -223,6 +225,7 @@ export const Login = async (req, res) => {
             success: true,
             message: "User logged in successfully",
             accessToken: token,
+            idToken: googleIdToken
         });
     } catch (err) {
         console.error("Login error", err);

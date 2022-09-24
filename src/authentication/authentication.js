@@ -1,6 +1,6 @@
 import axios from "axios";
 import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
-import {Signup} from "../user/user.controller.js";
+import {Login, Signup} from "../user/user.controller.js";
 import {verifyIdToken} from "../../utils/verify-token.js";
 import {recaptchaV2Verification} from "../../utils/recaptcha-v2-verification.js";
 import {decodeToken} from "../../utils/decode-token.js";
@@ -18,8 +18,11 @@ export const LoginWithEmailAndPassword = async (req, res) => {
         await axios
             .post(GOOGLE_API_BASE_URL + accountURL + ":signInWithPassword"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
             .then(r => {
-                console.log(`user ${data.email} connected successfully`)
-                res.send(r.data);
+                console.log(`user ${data.email} connected successfully with Google oatuh`)
+                const googleIdToken = r.data['idToken'];
+                Login(req, res, googleIdToken).then(() => {
+                    console.log(`user ${data.email} connected successfully with Sangrya`)
+                });
             })
             .catch((error) => {
                 console.error("Google login error: possible error -> User not found or incorrect email/password.");
