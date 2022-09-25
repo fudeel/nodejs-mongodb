@@ -9,8 +9,7 @@ export const verifyIdToken = async (req, res, next) => {
             res.status(200).send(true)
             next();
         })
-        .catch((error) => {
-            console.log('error verify token: ', error);
+        .catch(() => {
             res.status(200).send(false)
             next();
         })

@@ -3,7 +3,6 @@ import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
 import {Login, Signup} from "../user/user.controller.js";
 import {verifyIdToken} from "../../utils/verify-token.js";
 import {recaptchaV2Verification} from "../../utils/recaptcha-v2-verification.js";
-import {decodeToken} from "../../utils/decode-token.js";
 
 const accountURL = '/accounts';
 

@@ -5,6 +5,7 @@ import {generateJwt} from "../../utils/generateJwt.js";
 import {sendEmail} from "../../utils/mailer.js";
 import {comparePasswords, hashPassword, User} from "../../schemas/user-schema.js";
 import crypto from "crypto";
+import {generateNewActivationCode} from "../authentication/activate-account.js";
 
 const CHARACTER_SET =
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -70,47 +71,36 @@ export const Signup = async (req, res) => {
         delete result.value.confirmPassword;
         result.value.password = hash;
 
-        const code = Math.floor(100000 + Math.random() * 900000);
-
-        let expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
 
         if (!isError) {
-            const sendVerificationLink = await sendEmail(result.value.email, code, "activate");
+            const activateEmail = await generateNewActivationCode(result.value.email, res);
 
-            if (sendVerificationLink.error) {
-                return res.status(500).json({
-                    error: true,
-                    message: "Couldn't send verification email.",
+            result.value.emailToken = activateEmail.code;
+            result.value.emailTokenExpires = new Date(activateEmail.expiry);
+
+            //Check if referred and validate code.
+            if (result.value.hasOwnProperty("referrer") && !isError) {
+                let referrer = await User.findOne({
+                    referralCode: result.value.referrer,
                 });
+                if (!referrer) {
+                    return res.status(400).send({
+                        error: true,
+                        message: "Invalid referral code.",
+                    });
+                }
             }
-        }
 
+            result.value.referralCode = referralCode();
+            const newUser = await new User(result.value);
+            await newUser.save();
 
-        result.value.emailToken = code;
-        result.value.emailTokenExpires = new Date(expiry);
-
-        //Check if referred and validate code.
-        if (result.value.hasOwnProperty("referrer") && !isError) {
-            let referrer = await User.findOne({
-                referralCode: result.value.referrer,
+            return res.status(200).json({
+                success: true,
+                message: "Registration Success",
+                referralCode: result.value.referralCode,
             });
-            if (!referrer) {
-                return res.status(400).send({
-                    error: true,
-                    message: "Invalid referral code.",
-                });
-            }
         }
-        result.value.referralCode = referralCode();
-        const newUser = await new User(result.value);
-        await newUser.save();
-
-        if (!isError)
-        return res.status(200).json({
-            success: true,
-            message: "Registration Success",
-            referralCode: result.value.referralCode,
-        });
 
     } catch (error) {
         console.error("Catch error in Signup: ", error);
@@ -190,6 +180,13 @@ export const Login = async (req, res, googleIdToken) => {
 
         //2. Throw error if account is not activated
         if (!user.active) {
+            const activateEmail = await generateNewActivationCode(user.email, res);
+
+            console.log('activateEmail: ', activateEmail);
+
+            user.emailToken = activateEmail.code;
+            user.emailTokenExpires = new Date(activateEmail.expiry);
+            await user.save();
             return res.status(200).json({
                 error: true,
                 message: "You must verify your email to activate your account",
@@ -198,8 +195,12 @@ export const Login = async (req, res, googleIdToken) => {
             });
         }
 
+
+
         //3. Verify the password is valid
         const isValid = await comparePasswords(password, user.password);
+
+
 
         if (!isValid) {
             return res.status(400).json({
