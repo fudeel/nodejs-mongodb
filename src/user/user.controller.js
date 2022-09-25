@@ -5,7 +5,7 @@ import {generateJwt} from "../../utils/generateJwt.js";
 import {sendEmail} from "../../utils/mailer.js";
 import {comparePasswords, hashPassword, User} from "../../schemas/user-schema.js";
 import crypto from "crypto";
-import {generateNewActivationCode} from "../authentication/activate-account.js";
+import {generateNewActivationCode} from "../../utils/activate-account.js";
 
 const CHARACTER_SET =
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

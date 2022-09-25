@@ -1,4 +1,4 @@
-import {sendEmail} from "../../utils/mailer.js";
+import {sendEmail} from "./mailer.js";
 
 export const generateNewActivationCode = async (email, res) => {
     const code = Math.floor(100000 + Math.random() * 900000);
