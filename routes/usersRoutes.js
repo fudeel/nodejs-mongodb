@@ -3,6 +3,7 @@ import {cleanBody} from "../middlewares/cleanbody.js";
 import {validateToken} from "../middlewares/validateToken.js";
 import {Signup, Activate, Login, recover, reset, ResetPassword, ReferredAccounts, Logout} from "../src/user/user.controller.js";
 import {checkUserActivation} from "../src/user/user-data.controller.js";
+import {sendNewActivationCode} from "../src/authentication/authentication.js";
 
 const router = express.Router();
 const baseUrl = '/auth'
@@ -22,6 +23,8 @@ router.get(baseUrl + "/referred", validateToken, ReferredAccounts);
 router.get(baseUrl + "/logout", validateToken, Logout);
 
 router.post(baseUrl + "/verify-active", cleanBody, checkUserActivation);
+
+router.post(baseUrl + "/send-new-active-code", cleanBody, sendNewActivationCode);
 
 
 export default router;

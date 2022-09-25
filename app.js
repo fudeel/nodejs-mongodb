@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cors from 'cors';
 import admin from './utils/config.js';
-import authRoutes from './routes/authentication.js';
-import usersRoutes from './routes/users.js';
+import authRoutes from './routes/authenticationRoutes.js';
+import usersRoutes from './routes/usersRoutes.js';
 
 const PORT = process.env.PORT || 5000;
 

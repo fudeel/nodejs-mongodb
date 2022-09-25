@@ -6,6 +6,7 @@ import {sendEmail} from "../../utils/mailer.js";
 import {comparePasswords, hashPassword, User} from "../../schemas/user-schema.js";
 import crypto from "crypto";
 import {generateNewActivationCode} from "../../utils/activate-account.js";
+import {findUser} from "../../utils/find-user.js";
 
 const CHARACTER_SET =
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -73,7 +74,7 @@ export const Signup = async (req, res) => {
 
 
         if (!isError) {
-            const activateEmail = await generateNewActivationCode(result.value.email, res);
+            const activateEmail = await generateNewActivationCode(result.value.email);
 
             result.value.emailToken = activateEmail.code;
             result.value.emailTokenExpires = new Date(activateEmail.expiry);
@@ -167,35 +168,8 @@ export const Login = async (req, res, googleIdToken) => {
             });
         }
 
-        //1. Find if any account with that email exists in DB
-        const user = await User.findOne({ email: email });
 
-        // NOT FOUND - Throw error
-        if (!user) {
-            return res.status(404).json({
-                error: true,
-                message: "Account not found",
-            });
-        }
-
-        //2. Throw error if account is not activated
-        if (!user.active) {
-            const activateEmail = await generateNewActivationCode(user.email, res);
-
-            console.log('activateEmail: ', activateEmail);
-
-            user.emailToken = activateEmail.code;
-            user.emailTokenExpires = new Date(activateEmail.expiry);
-            await user.save();
-            return res.status(200).json({
-                error: true,
-                message: "You must verify your email to activate your account",
-                activationError: true,
-                email: user.email
-            });
-        }
-
-
+        const user = await findUser(email, res);
 
         //3. Verify the password is valid
         const isValid = await comparePasswords(password, user.password);

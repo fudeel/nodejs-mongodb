@@ -1,6 +1,6 @@
 import Joi from "joi";
-import {User} from "../../schemas/user-schema.js";
 import {decodeToken} from "../../utils/decode-token.js";
+import {findUser} from "../../utils/find-user.js";
 
 
 export const checkUserActivation = async (req, res) => {
@@ -31,27 +31,7 @@ export const checkUserActivation = async (req, res) => {
         });
     }
 
-    //1. Find if any account with that email exists in DB
-    const user = await User.findOne({ email: decodedEmail });
 
-    // NOT FOUND - Throw error
-    if (!user) {
-        return res.status(404).json({
-            error: true,
-            message: "Account not found",
-        });
-    }
-
-    //2. Throw error if account is not activated
-    if (!user.active) {
-        console.log('Current user is not active');
-        return false;
-    } else {
-        console.log('User is active');
-        return res.send({
-            success: true,
-            message: 'user is active'
-        });
-    }
+    await findUser(decodedEmail, res);
 
 }

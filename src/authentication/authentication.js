@@ -3,6 +3,9 @@ import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
 import {Login, Signup} from "../user/user.controller.js";
 import {verifyIdToken} from "../../utils/verify-token.js";
 import {recaptchaV2Verification} from "../../utils/recaptcha-v2-verification.js";
+import Joi from "joi";
+import {findUser} from "../../utils/find-user.js";
+import {generateNewActivationCode} from "../../utils/activate-account.js";
 
 const accountURL = '/accounts';
 
@@ -88,4 +91,22 @@ export const VerifyAuthenticationToken = async (req, res, next) => {
             res.status(403).send(false)
         }
     }
+}
+
+
+export const sendNewActivationCode = async (req, res) => {
+    const activationEmailSchema = Joi.object().keys({
+        email: Joi.string().email({ minDomainSegments: 2 }).required()
+    });
+
+    const result = await activationEmailSchema.validate(req.body);
+
+    if (result.error) {
+        return await res.status(500).json({
+            error: true,
+            message: result.error.message.toString()
+        });
+    }
+
+    await findUser(req.body.email, res);
 }
