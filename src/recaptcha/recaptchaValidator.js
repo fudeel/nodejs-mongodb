@@ -36,8 +36,8 @@ export const validateRecaptchaV3 = async (req, res) => {
 
         const validator = await recaptchaVerification(req.body.recaptchaKey, 'v3');
 
-        return res.status(400).json(validator)
+        return res.status(200).json(validator)
     } catch (e) {
-        console.log('V2 Error: ', e);
+        console.log('Recaptcha verify try-catch error: ', e);
     }
 }
