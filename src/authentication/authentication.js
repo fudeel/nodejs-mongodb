@@ -49,8 +49,6 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
         returnSecureToken: true
     }
 
-    console.log('DATA: ', data);
-
     const recaptcha = await recaptchaV2Verification(data.recaptchaKey).then(res => {
         return res;
     }).catch((err) => {
@@ -108,5 +106,5 @@ export const sendNewActivationCode = async (req, res) => {
         });
     }
 
-    await findUser(req.body.email, res);
+    await findUser(req.body.email, res, true);
 }
