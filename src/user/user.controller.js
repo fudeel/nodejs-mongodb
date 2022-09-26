@@ -169,7 +169,7 @@ export const Login = async (req, res, googleIdToken) => {
         }
 
 
-        const user = await findUser(email, res);
+        const user = await findUser(email, res, false);
 
         //3. Verify the password is valid
         const isValid = await comparePasswords(password, user.password);
@@ -203,11 +203,7 @@ export const Login = async (req, res, googleIdToken) => {
             idToken: googleIdToken
         });
     } catch (err) {
-        console.error("Login error", err);
-        return res.status(500).json({
-            error: true,
-            message: "Couldn't login. Please try again later.",
-        });
+        console.error("Login error try-catch", err);
     }
 };
 

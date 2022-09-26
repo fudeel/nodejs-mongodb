@@ -1,7 +1,7 @@
 import {User} from "../schemas/user-schema.js";
 import {generateNewActivationCode} from "./activate-account.js";
 
-export const findUser = async (email, res) => {
+export const findUser = async (email, res, generateCode) => {
     //1. Find if any account with that email exists in DB
     const user = await User.findOne({ email: email });
 
@@ -15,13 +15,16 @@ export const findUser = async (email, res) => {
 
     //2. Throw error if account is not activated
     if (!user.active) {
-        const activateEmail = await generateNewActivationCode(user.email);
-        user.emailToken = activateEmail.code;
-        user.emailTokenExpires = new Date(activateEmail.expiry);
-        await user.save();
+        if (generateCode) {
+            const activateEmail = await generateNewActivationCode(user.email);
+            user.emailToken = activateEmail.code;
+            user.emailTokenExpires = new Date(activateEmail.expiry);
+            await user.save();
+        }
+
         return res.status(200).json({
             error: true,
-            message: `You must verify your email to activate your account. We've sent the activation code to ${user.email}`,
+            message: `You must verify your email to activate your account.`,
             activationError: true,
             email: user.email
         });
