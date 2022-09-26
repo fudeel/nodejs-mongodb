@@ -2,7 +2,7 @@ import axios from "axios";
 import {GOOGLE_API_BASE_URL} from "../../utils/constants.js";
 import {Login, Signup} from "../user/user.controller.js";
 import {verifyIdToken} from "../../utils/verify-token.js";
-import {recaptchaV2Verification} from "../../utils/recaptcha-v2-verification.js";
+import {recaptchaVerification} from "../../utils/recaptcha-verification.js";
 import Joi from "joi";
 import {findUser} from "../../utils/find-user.js";
 
@@ -49,7 +49,7 @@ export const RegisterWithEmailAndPassword = async (req, res) => {
         returnSecureToken: true
     }
 
-    const recaptcha = await recaptchaV2Verification(data.recaptchaKey).then(res => {
+    const recaptcha = await recaptchaVerification(data.recaptchaKey, 'v2').then(res => {
         return res;
     }).catch((err) => {
         return err;

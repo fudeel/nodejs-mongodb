@@ -5,6 +5,7 @@ import cors from 'cors';
 import admin from './utils/config.js';
 import authRoutes from './routes/authenticationRoutes.js';
 import usersRoutes from './routes/usersRoutes.js';
+import recaptchaRoutes from "./routes/recaptchaRoutes.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -40,6 +41,7 @@ app.get("/ping", (req, res) => {
 
 app.use( BASE_URL + "/authentication", authRoutes);
 app.use( BASE_URL + "/users", usersRoutes);
+app.use( BASE_URL + "/security", recaptchaRoutes);
 /*
 * usage fro protected routes
 * protected route: app.use( BASE_URL + "/protected-route", protectedRoutes, verifyIdToken);
