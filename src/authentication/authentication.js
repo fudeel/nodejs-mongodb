@@ -5,7 +5,6 @@ import {verifyIdToken} from "../../utils/verify-token.js";
 import {recaptchaV2Verification} from "../../utils/recaptcha-v2-verification.js";
 import Joi from "joi";
 import {findUser} from "../../utils/find-user.js";
-import {generateNewActivationCode} from "../../utils/activate-account.js";
 
 const accountURL = '/accounts';
 
@@ -32,6 +31,7 @@ export const LoginWithEmailAndPassword = async (req, res) => {
             });
 
     } catch (err) {
+        console.log('generic error in try-catch login with username and password: ', err);
         res.send(err);
     } else {
         res.send({error: true, message: 'Incorrect email or password'});
