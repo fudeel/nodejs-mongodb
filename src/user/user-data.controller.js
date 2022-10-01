@@ -7,7 +7,7 @@ export const checkUserActivation = async (req, res) => {
 
     const decodedEmail = await decodeToken(req.headers['idtoken']);
 
-    console.log('EMAIL: ', decodedEmail);
+    console.log('decoded email: ', decodedEmail);
 
     const activationSchema = Joi.object().keys({
         email: Joi.string().email({ minDomainSegments: 2 })
@@ -32,6 +32,12 @@ export const checkUserActivation = async (req, res) => {
     }
 
 
-    await findUser(decodedEmail, res);
+    const user = await findUser(decodedEmail, res);
+
+    res.status(200).send({
+        status: 200,
+        error: false,
+        user: user
+    })
 
 }

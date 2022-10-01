@@ -22,7 +22,7 @@ export const findUser = async (email, res, generateCode) => {
             await user.save();
         }
 
-        return res.status(200).json({
+        return res.status(401).json({
             error: true,
             message: `You must verify your email to activate your account.`,
             activationError: true,
