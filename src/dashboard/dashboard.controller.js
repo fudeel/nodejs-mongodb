@@ -2,14 +2,13 @@ import Joi from "joi";
 import {User} from "../../schemas/user-schema.js";
 
 
+const filterSchema = Joi.object().keys({
+    roles: Joi.number().min(1).max(5),
+    username: Joi.string().optional()
+});
+
 export const GetUsersByFilter = async (req, res, googleIdToken) => {
     try {
-
-        const filterSchema = Joi.object().keys({
-            roles: Joi.number().min(1).max(5),
-            username: Joi.string().optional(),
-            // recaptchaKey: Joi.string().required(),
-        });
 
         // POST validation
         const result = await filterSchema.validate(req.body);
