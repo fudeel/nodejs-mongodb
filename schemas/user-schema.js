@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import {number} from "joi";
 
 const Schema = mongoose.Schema;
 
@@ -17,7 +16,7 @@ const userSchema = new Schema(
         resetPasswordExpires: { type: Date, default: null },
 
         pic: { type: String, default: null },
-        roles: { type: Number, default: [] },
+        roles: { type: Number, default: null },
         occupation: { type: String, default: null },
         companyName: { type: String, default: null },
         phone: { type: String, default: null },
