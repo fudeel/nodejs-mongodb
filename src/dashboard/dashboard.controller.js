@@ -28,7 +28,7 @@ export const GetUsersByFilter = async (req, res, googleIdToken) => {
         console.log('filtered body: ', filterBody);
 
 
-        User.find(filterBody).select('username pic roles').exec((err, docs) => {
+        User.find(filterBody).select('username pic roles sellingItems').exec((err, docs) => {
             if (!err) {
                 console.log('DOCS: ', docs);
                 res.status(200).send(docs);
