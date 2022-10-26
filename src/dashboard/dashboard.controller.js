@@ -30,6 +30,7 @@ export const GetUsersByFilter = async (req, res, googleIdToken) => {
 
         User.find(filterBody).select('username pic roles').exec((err, docs) => {
             if (!err) {
+                console.log('DOCS: ', docs);
                 res.status(200).send(docs);
             } else {
                 res.status(500).send({error: true, message: err.message, code: err.code});

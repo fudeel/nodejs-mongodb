@@ -16,7 +16,7 @@ const userSchema = new Schema(
         resetPasswordExpires: { type: Date, default: null },
 
         pic: { type: String, default: null },
-        roles: { type: [String], default: ['customer'] },
+        roles: { type: String, default: 'customer' },
         occupation: { type: String, default: null },
         companyName: { type: String, default: null },
         phone: { type: String, default: null },
