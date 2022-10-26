@@ -16,7 +16,7 @@ const userSchema = new Schema(
         resetPasswordExpires: { type: Date, default: null },
 
         pic: { type: String, default: null },
-        roles: { type: Number, default: null },
+        roles: { type: [String], default: ['customer'] },
         occupation: { type: String, default: null },
         companyName: { type: String, default: null },
         phone: { type: String, default: null },
@@ -30,7 +30,7 @@ const userSchema = new Schema(
         communication: Schema.Types.Mixed,
         emailSettings: Schema.Types.Mixed,
 
-
+        sellingItems: {type: [String], default: []},
         emailToken: { type: String, default: null },
         emailTokenExpires: { type: Date, default: null },
 

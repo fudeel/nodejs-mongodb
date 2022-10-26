@@ -3,7 +3,7 @@ import {User} from "../../schemas/user-schema.js";
 
 
 const filterSchema = Joi.object().keys({
-    roles: Joi.number().min(1).max(5),
+    roles: Joi.array().items(Joi.string()),
     username: Joi.string().optional()
 });
 
@@ -28,7 +28,7 @@ export const GetUsersByFilter = async (req, res, googleIdToken) => {
         console.log('filtered body: ', filterBody);
 
 
-        User.find(filterBody).select('username userId pic').exec((err, docs) => {
+        User.find(filterBody).select('username pic roles').exec((err, docs) => {
             if (!err) {
                 res.status(200).send(docs);
             } else {
