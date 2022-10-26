@@ -14,6 +14,7 @@ const userSchema = new Schema(
         password: { type: String, required: true },
         resetPasswordToken: { type: String, default: null },
         resetPasswordExpires: { type: Date, default: null },
+        isCertified: { type: Boolean, default: false},
 
         pic: { type: String, default: null },
         roles: { type: String, default: 'customer' },
