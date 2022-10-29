@@ -7,6 +7,7 @@ import authRoutes from './routes/authenticationRoutes.js';
 import usersRoutes from './routes/usersRoutes.js';
 import recaptchaRoutes from "./routes/recaptchaRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import imagesRoutes from "./routes/imagesRoutes.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -44,6 +45,8 @@ app.use( BASE_URL + "/authentication", authRoutes);
 app.use( BASE_URL + "/users", usersRoutes);
 app.use( BASE_URL + "/security", recaptchaRoutes);
 app.use( BASE_URL + "/dashboard", dashboardRoutes);
+app.use( BASE_URL + "/images", imagesRoutes);
+
 /*
 * usage fro protected routes
 * protected route: app.use( BASE_URL + "/protected-route", protectedRoutes, verifyIdToken);

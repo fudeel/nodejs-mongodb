@@ -1,6 +1,6 @@
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody.js";
-import {validateToken} from "../middlewares/validateToken.js";
+import {validateToken, validateTokenWithRecaptchaV3} from "../middlewares/validateToken.js";
 import {Signup, Activate, Login, recover, reset, ResetPassword, ReferredAccounts, Logout} from "../src/user/user.controller.js";
 import {checkUserActivation} from "../src/user/user-data.controller.js";
 import {sendNewActivationCode} from "../src/authentication/authentication.js";
