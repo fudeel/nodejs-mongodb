@@ -48,7 +48,7 @@ app.use( BASE_URL + "/dashboard", dashboardRoutes);
 app.use( BASE_URL + "/images", imagesRoutes);
 
 /*
-* usage fro protected routes
+* usage from protected routes
 * protected route: app.use( BASE_URL + "/protected-route", protectedRoutes, verifyIdToken);
 * */
 

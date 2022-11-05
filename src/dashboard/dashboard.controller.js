@@ -1,13 +1,13 @@
 import Joi from "joi";
-import {User} from "../../schemas/user-schema.js";
-
+import {Event} from "../../schemas/event-schema.js";
 
 const filterSchema = Joi.object().keys({
-    roles: Joi.array().items(Joi.string()),
-    username: Joi.string().optional()
+    maxDistance: Joi.number(),
+    latitude: Joi.number().optional(),
+    longitude: Joi.number().optional()
 });
 
-export const GetUsersByFilter = async (req, res, googleIdToken) => {
+export const getEvents = async (req, res, googleIdToken) => {
     try {
 
         // POST validation
@@ -19,19 +19,22 @@ export const GetUsersByFilter = async (req, res, googleIdToken) => {
             });
         }
 
-
-        const filterBody = {}
-
-        if (req.body.roles) filterBody.roles = req.body.roles;
-        if (req.body.username) filterBody.username = req.body.username;
-
-        console.log('filtered body: ', filterBody);
-
-
-        User.find(filterBody).select('username pic roles sellingItems isCertified').exec((err, docs) => {
+        Event.aggregate([
+            {
+                $geoNear: {
+                    near: {type: 'Point', coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.longitude)]},
+                    key: 'location',
+                    maxDistance: parseFloat('1000')*1609,
+                    distanceField: 'dist.calculated',
+                    spherical: true
+                }
+            }
+        ]).exec((err, docs) => {
             if (!err) {
+                console.log('DOCS: ', docs);
                 res.status(200).send(docs);
             } else {
+                console.log('POISTION ERROR: ', err);
                 res.status(500).send({error: true, message: err.message, code: err.code});
             }
         });
