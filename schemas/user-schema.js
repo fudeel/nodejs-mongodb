@@ -17,7 +17,7 @@ const userSchema = new Schema(
         isCertified: { type: Boolean, default: false},
 
         pic: { type: String, default: null },
-        roles: { type: String, default: 'customer' },
+        role: { type: String, default: 'customer' },
         occupation: { type: String, default: null },
         companyName: { type: String, default: null },
         phone: { type: String, default: null },

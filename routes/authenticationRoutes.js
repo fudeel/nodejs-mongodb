@@ -8,6 +8,7 @@
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody.js";
 import {
+    getCurrentUserInfo,
     LoginWithEmailAndPassword,
     RegisterWithEmailAndPassword,
     VerifyAuthenticationToken
@@ -18,5 +19,6 @@ const router = express.Router();
 router.post('/oauth-login', cleanBody, LoginWithEmailAndPassword);
 router.post('/oauth-register', cleanBody, RegisterWithEmailAndPassword);
 router.get('/verify-token', cleanBody, VerifyAuthenticationToken);
+router.get('/get-current-user-info', cleanBody, getCurrentUserInfo);
 
 export default router;

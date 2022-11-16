@@ -5,6 +5,8 @@ import {verifyIdToken} from "../../utils/verify-token.js";
 import {recaptchaVerification} from "../../utils/recaptcha-verification.js";
 import Joi from "joi";
 import {findUser} from "../../utils/find-user.js";
+import {User} from "../../schemas/user-schema.js";
+
 
 const accountURL = '/accounts';
 
@@ -107,4 +109,24 @@ export const sendNewActivationCode = async (req, res) => {
     }
 
     await findUser(req.body.email, res, true);
+}
+
+
+export const getCurrentUserInfo = async (req, res, next) => {
+    if (req.headers['authorization'] !== null && req.headers['authorization'] !== '') {
+        try {
+            const accessToken = req.headers['authorization'].slice(7);
+            await User.find({accessToken}).select('username pic role sellingItems isCertified').exec((err, docs) => {
+                if (!err) {
+                    res.status(200).send(docs);
+                } else {
+                    res.status(500).send({error: true, message: err.message, code: err.code});
+                }
+            });
+
+        } catch (e) {
+            console.log('ERROR: ', e);
+            res.status(403).send(false)
+        }
+    }
 }
