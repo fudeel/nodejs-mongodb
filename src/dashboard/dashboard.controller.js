@@ -1,76 +1,78 @@
-import Joi from "joi";
-import {Event} from "../../schemas/event-schema.js";
-import {User} from "../../schemas/user-schema.js";
-
-
-const filterSchema = Joi.object().keys({
-    maxDistance: Joi.number(),
-    latitude: Joi.number().optional(),
-    longitude: Joi.number().optional()
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAllCreatorsByFilter = exports.getEvents = exports.GetUsersByFilter = void 0;
+const joi_1 = __importDefault(require("joi"));
+const event_schema_1 = require("../../schemas/event-schema");
+const user_schema_1 = require("../../schemas/user-schema");
+const filterSchema = joi_1.default.object().keys({
+    maxDistance: joi_1.default.number(),
+    latitude: joi_1.default.number().optional(),
+    longitude: joi_1.default.number().optional()
 });
-const userFilterSchema = Joi.object().keys({
-    role: Joi.array().items(Joi.string()),
-    username: Joi.string().optional()
+const userFilterSchema = joi_1.default.object().keys({
+    role: joi_1.default.array().items(joi_1.default.string()),
+    username: joi_1.default.string().optional()
 });
-
-
-
-export const GetUsersByFilter = async (req, res, googleIdToken) => {
+const GetUsersByFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-
         // POST validation
-        const result = await userFilterSchema.validate(req.body);
+        const result = yield userFilterSchema.validate(req.body);
         if (result.error) {
-            return await res.status(500).json({
+            return yield res.status(500).json({
                 error: true,
                 message: result.error.message.toString()
             });
         }
-
-
-        const filterBody = {}
-
-        if (req.body.role) filterBody.role = req.body.role;
-        if (req.body.username) filterBody.username = req.body.username;
-
-        console.log('filtered body: ', filterBody);
-
-
-        User.find(filterBody).select('username pic role sellingItems isCertified').exec((err, docs) => {
+        const filterBody = {
+            role: null,
+            username: null
+        };
+        if (req.body.role)
+            filterBody.role = req.body.role;
+        if (req.body.username)
+            filterBody.username = req.body.username;
+        user_schema_1.User.find(filterBody).select('username pic role sellingItems isCertified').exec((err, docs) => {
             if (!err) {
                 res.status(200).send(docs);
-            } else {
-                res.status(500).send({error: true, message: err.message, code: err.code});
+            }
+            else {
+                res.status(500).send({ error: true, message: err.message, code: 500 });
             }
         });
-
-
-
-
-    } catch (err) {
+    }
+    catch (err) {
         console.error("Login error try-catch", err);
     }
-};
-
-
-export const getEvents = async (req, res, googleIdToken) => {
+});
+exports.GetUsersByFilter = GetUsersByFilter;
+const getEvents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-
         // POST validation
-        const result = await filterSchema.validate(req.body);
+        const result = yield filterSchema.validate(req.body);
         if (result.error) {
-            return await res.status(500).json({
+            return yield res.status(500).json({
                 error: true,
                 message: result.error.message.toString()
             });
         }
-
-        Event.aggregate([
+        event_schema_1.Event.aggregate([
             {
                 $geoNear: {
-                    near: {type: 'Point', coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.longitude)]},
+                    near: { type: 'Point', coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.longitude)] },
                     key: 'location',
-                    maxDistance: parseFloat('1000')*1609,
+                    maxDistance: parseFloat('1000') * 1609,
                     distanceField: 'dist.calculated',
                     spherical: true
                 }
@@ -79,40 +81,34 @@ export const getEvents = async (req, res, googleIdToken) => {
             if (!err) {
                 console.log('DOCS: ', docs);
                 res.status(200).send(docs);
-            } else {
+            }
+            else {
                 console.log('POISTION ERROR: ', err);
-                res.status(500).send({error: true, message: err.message, code: err.code});
+                res.status(500).send({ error: true, message: err.message, code: 500 });
             }
         });
-
-
-
-
-    } catch (err) {
+    }
+    catch (err) {
         console.error("Login error try-catch", err);
     }
-};
-
-
-
-export const getAllCreatorsByFilter = async (req, res, googleIdToken) => {
+});
+exports.getEvents = getEvents;
+const getAllCreatorsByFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-
         // POST validation
-        const result = await filterSchema.validate(req.body);
+        const result = yield filterSchema.validate(req.body);
         if (result.error) {
-            return await res.status(500).json({
+            return yield res.status(500).json({
                 error: true,
                 message: result.error.message.toString()
             });
         }
-
-        Event.aggregate([
+        event_schema_1.Event.aggregate([
             {
                 $geoNear: {
-                    near: {type: 'Point', coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.longitude)]},
+                    near: { type: 'Point', coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.longitude)] },
                     key: 'location',
-                    maxDistance: parseFloat('1000')*1609,
+                    maxDistance: parseFloat('1000') * 1609,
                     distanceField: 'dist.calculated',
                     spherical: true
                 }
@@ -121,16 +117,15 @@ export const getAllCreatorsByFilter = async (req, res, googleIdToken) => {
             if (!err) {
                 console.log('DOCS: ', docs);
                 res.status(200).send(docs);
-            } else {
+            }
+            else {
                 console.log('POISTION ERROR: ', err);
-                res.status(500).send({error: true, message: err.message, code: err.code});
+                res.status(500).send({ error: true, message: err.message, code: 500 });
             }
         });
-
-
-
-
-    } catch (err) {
+    }
+    catch (err) {
         console.error("Login error try-catch", err);
     }
-};
+});
+exports.getAllCreatorsByFilter = getAllCreatorsByFilter;

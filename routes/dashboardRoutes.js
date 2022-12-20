@@ -1,15 +1,13 @@
-import express from "express";
-import {validateTokenWithRecaptchaV3} from "../middlewares/validateToken.js";
-import {getEvents, GetUsersByFilter} from "../src/dashboard/dashboard.controller.js";
-import {cleanBody} from "../middlewares/cleanbody.js";
-
-const router = express.Router();
-
-router.post("/get-all-events", validateTokenWithRecaptchaV3, cleanBody, getEvents);
-router.post("/get-users-by-filter", validateTokenWithRecaptchaV3, cleanBody, GetUsersByFilter);
-
-
-
-
-
-export default router;
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const validateToken_1 = require("../middlewares/validateToken");
+const dashboard_controller_1 = require("../src/dashboard/dashboard.controller");
+const cleanbody_1 = require("../middlewares/cleanbody");
+const router = express_1.default.Router();
+router.post("/get-all-events", validateToken_1.validateTokenWithRecaptchaV3, cleanbody_1.cleanBody, dashboard_controller_1.getEvents);
+router.post("/get-users-by-filter", validateToken_1.validateTokenWithRecaptchaV3, cleanbody_1.cleanBody, dashboard_controller_1.GetUsersByFilter);
+exports.default = router;
