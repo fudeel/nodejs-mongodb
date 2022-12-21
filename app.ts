@@ -8,8 +8,9 @@ import usersRoutes from './routes/usersRoutes';
 import recaptchaRoutes from "./routes/recaptchaRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import imagesRoutes from "./routes/imagesRoutes";
+import {createTransporter} from "./utils/mailer";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 const BASE_URL = "/api/v1"
 
 async function run() {
@@ -55,6 +56,7 @@ app.use( BASE_URL + "/images", imagesRoutes);
 
 app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
+    createTransporter();
 });
 
 
