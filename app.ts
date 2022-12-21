@@ -1,5 +1,5 @@
 import express from 'express';
-import mongoose, {ConnectOptions} from "mongoose";
+import mongoose, {connect, ConnectOptions} from "mongoose";
 import bodyParser from "body-parser";
 import cors from 'cors';
 import admin from './utils/config';
@@ -10,22 +10,21 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import imagesRoutes from "./routes/imagesRoutes";
 
 const PORT = process.env.PORT || 5000;
-
 const BASE_URL = "/api/v1"
 
-console.log('BASE_HOST: ', process.env.BASE_HOST);
+async function run() {
+    /**
+     * Connection to MongoDB instance by passing as params the mongo uri from environment
+     * @param MONGODB_URI
+     */
+    await connect(process.env.MONGODB_URI);
+}
 
-console.log('mongo db uri: ', process.env.MONGODB_URI)
-
-if (process.env.MONGODB_URI)
-mongoose.connect(process.env.MONGODB_URI, {
-    dbName: process.env.DB_NAME,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-} as ConnectOptions, () => {
-    console.log("Database connection Success.");
+run().then(() => {
+    console.log('Connection to DB success');
+}).catch(err => {
+    console.log('Error during DB connection: ', err);
 })
-else console.log('MONGO_URI is not valid. \n Process ended');
 
 const app = express();
 
