@@ -15,13 +15,13 @@ const userSchema = new Schema(
         password: { type: String, required: true },
         resetPasswordToken: {
             type: mongoose.Schema.Types.Mixed,
-            required: true,
+            required: false,
             validate: (value: string | null) => {
                 return value === null || true;
             }, default: null },
         resetPasswordExpires: {
             type: mongoose.Schema.Types.Mixed,
-            required: true,
+            required: false,
             validate: (value: Date | null) => {
                 return value === null || true;
             }, default: null },
@@ -45,19 +45,14 @@ const userSchema = new Schema(
         sellingItems: {type: [String], default: []},
         emailToken: {
             type: mongoose.Schema.Types.Mixed,
-            required: true,
-            validate: (value: string | null) => {
+            required: false,
+            validate: (value: number | null) => {
                 return value === null || true;
             }, default: null },
-        emailTokenExpires: {
-            type: mongoose.Schema.Types.Mixed,
-            required: true,
-            validate: (value: Date | null) => {
-                return value === null || true;
-            }, default: null },
+        emailTokenExpires: { type: Date, default: null },
 
         accessToken: {type: mongoose.Schema.Types.Mixed,
-            required: true,
+            required: false,
             validate: (value: string | null) => {
                 return value === null || true;
             }, default: null },

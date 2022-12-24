@@ -52,33 +52,52 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
         returnSecureToken: true
     }
 
+    console.log('>  registering with email and password');
+    console.table(data);
+    console.log('\n     ----    ----    \n');
+
+
+
+    console.log('>  waiting for recaptcha verification v2 \n');
     const recaptcha = await recaptchaVerification(data.recaptchaKey, 'v2').then((res: any) => {
+        console.table(res);
+        console.log('\n     ----    ----    \n');
         return res;
     }).catch((err: any) => {
+        console.log('X  error v2');
+        console.table(res);
+        console.log('\n     ----    ----    \n');
         return err;
     });
 
-    if (recaptcha.success)
-    await Signup(req, res).then(async (r) => {
-        if (await r && r?.statusCode !== 500) {
-            axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
-                email: data.email,
-                password: data.password,
-                returnSecureToken: data.returnSecureToken
-            }), {
-                headers: {
-                    "Content-Type": "application/json",
-                }})
-                .then(() => {
-                    console.log('New user created with email: ', data.email);
-                })
-                .catch(error => {
-                    console.error("Google API error: ", error);
-                });
-        }
-    });
+    if (recaptcha.success) {
+        console.log('>  recaptcha valid. Let us continue with the registration');
+        await Signup(req, res).then(async (r) => {
+
+            console.log('>  saving data on Firebase db')
+            if (await r && r?.statusCode !== 500) {
+                axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                    returnSecureToken: data.returnSecureToken
+                }), {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }})
+                    .then(() => {
+                        console.log('>  New user created with email: ', data.email);
+                    })
+                    .catch(error => {
+                        console.error("Google API error: ", error);
+                    });
+            }
+        }).catch(err => {
+            console.log('X  Error during Signup process: ', err);
+        });
+    }
+
     else {
-        console.log('Recaptcha not valid for user: ', data.email);
+        console.log('X  Recaptcha not valid for user: ', data.email);
         res.send({error: true, message: 're-captcha not valid'})
     }
 

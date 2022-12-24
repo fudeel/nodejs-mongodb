@@ -1,5 +1,5 @@
 import express from 'express';
-import mongoose, {connect, ConnectOptions} from "mongoose";
+import mongoose, {connect, ConnectOptions, set} from "mongoose";
 import bodyParser from "body-parser";
 import cors from 'cors';
 import admin from './utils/config';
@@ -8,7 +8,6 @@ import usersRoutes from './routes/usersRoutes';
 import recaptchaRoutes from "./routes/recaptchaRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import imagesRoutes from "./routes/imagesRoutes";
-import {createTransporter} from "./utils/mailer";
 
 const PORT = process.env.PORT || 8000;
 const BASE_URL = "/api/v1"
@@ -18,6 +17,7 @@ async function run() {
      * Connection to MongoDB instance by passing as params the mongo uri from environment
      * @param MONGODB_URI
      */
+    await set('strictQuery', false);
     await connect(process.env.MONGODB_URI);
 }
 
@@ -56,7 +56,6 @@ app.use( BASE_URL + "/images", imagesRoutes);
 
 app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
-    createTransporter();
 });
 
 

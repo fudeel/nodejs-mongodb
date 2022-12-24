@@ -1,22 +1,20 @@
-import nodemailer, {Transport, Transporter, TransportOptions} from 'nodemailer';
+import nodemailer, {Transport, TransportOptions} from 'nodemailer';
+import * as dotenv from 'dotenv';
 
-let transporter: Transporter;
-export function createTransporter () {
-    const t: Transporter = nodemailer.createTransport({
-        host: process.env.MAILGUN_SMTP_HOSTNAME,
-        port: process.env.MAILGUN_PORT,
-        secure: false,
-        auth: {
-            user: process.env.MAILGUN_USERNAME,
-            pass: process.env.MAILGUN_PASSWORD,
-        }
-    } as TransportOptions | Transport<unknown>);
-    t.verify().then().catch(console.error);
+dotenv.config();
 
-    transporter = t;
-}
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    auth: {
+        user: "fadilmucia@gmail.com",
+        pass: process.env.GMAIL_SMTP_AUTH_PASSWORD,
+    }
+} as TransportOptions | Transport<unknown>);
+transporter.verify().then().catch(console.error);
 
 export async function sendEmail(email: string, code: number, action: "activate" | "reset", link?: string) {
+
     const activation_body = `<!DOCTYPE> 
     <html>
     <style>
@@ -40,10 +38,10 @@ export async function sendEmail(email: string, code: number, action: "activate" 
 
     try {
         transporter.sendMail({
-            from: process.env.PROJECT_NAME,
-            to: email,
-            subject: action === "activate" ? "Complete your registration" : action === "reset" ? "Password reset" : "ok",
-            html: action === "activate" ? activation_body : action === "reset" ? new_password_body : undefined
+            from: "<fadilmucia@gmail.com>",
+            to: "<" + email + ">",
+            subject: action === "activate" ? "Complete your registration" : "Password reset",
+            html: action === "activate" ? activation_body : new_password_body
         }).then().catch(error => {
             console.log('There was an error sending the email: ', error);
         });
@@ -55,4 +53,6 @@ export async function sendEmail(email: string, code: number, action: "activate" 
             message: "Cannot send email",
         };
     }
+
+
 }

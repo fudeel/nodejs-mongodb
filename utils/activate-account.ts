@@ -1,15 +1,10 @@
 import {sendEmail} from "./mailer";
-
-interface ActivationCode {
-    error?: boolean,
-    message?: string,
-    code: number | null,
-    expiry: Date | null
-}
+import {ActivationCode} from "../models/ActivationCode";
 
 export const generateNewActivationCode = async (email: string): Promise<ActivationCode> => {
     const code = Math.floor(100000 + Math.random() * 900000);
-    const expiry = Date.now() + 60 * 1000 * 15; //15 mins in ms
+    const threeHours = 3 * 60 * 60 * 1000;
+    const futureTime = new Date(Date.now() + threeHours);
     const sendVerificationLink = await sendEmail(email, code, "activate");
 
     if (sendVerificationLink.error) {
@@ -23,14 +18,12 @@ export const generateNewActivationCode = async (email: string): Promise<Activati
         console.log(`Error in sendind the activation code to ${email}: `, error);
         return error;
     } else {
-        const activationCode: ActivationCode = {
+        console.log(`email sent to: ${email} with the code: ${code}`);
+        return {
             error: false,
             message: `Email sent successfully to ${email}`,
             code: code,
-            expiry: new Date(expiry)
+            expiry: new Date(futureTime)
         };
-
-        console.log(`Activation code was successfully sent to ${email}: `, activationCode);
-        return activationCode;
     }
 }

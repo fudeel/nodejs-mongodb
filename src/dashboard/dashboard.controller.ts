@@ -89,7 +89,7 @@ export const getEvents = async (req: Request, res: Response) => {
 
 
     } catch (err) {
-        console.error("Login error try-catch", err);
+        console.error("Events error try-catch", err);
     }
 };
 

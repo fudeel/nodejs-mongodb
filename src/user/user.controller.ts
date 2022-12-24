@@ -26,8 +26,11 @@ const userSchema = Joi.object().keys({
 });
 
 export const Signup = async (req: Request, res: Response) => {
+    console.log('>  Signup');
     try {
         let isError = false;
+        let isComplete = false;
+        console.log('>  validating user schema');
         const result = await userSchema.validate(req.body);
         if (result.error) {
             return await res.status(500).json({
@@ -36,44 +39,45 @@ export const Signup = async (req: Request, res: Response) => {
             });
         }
 
-        if (!isError)
-        await User.findOne({
-            email: result.value.email,
-        }).then( (user) => {
-            if (user) {
-                isError = true;
-                return res.status(500).json({
-                    error: true,
-                    message: "Email already exists.",
-                });
-            }
-        });
+        while (!isError || !isComplete) {
+            console.log('>  checking if user already exists')
+            await User.findOne({
+                email: result.value.email,
+            }).then( (user) => {
+                if (user) {
+                    isError = true;
+                    return res.status(500).json({
+                        error: true,
+                        message: "Email already exists.",
+                    });
+                }
+            });
 
-        if (!isError)
-        await User.findOne({
-            username: result.value.username,
-        }).then( (user) => {
-            if (user) {
-                isError = true;
-                return res.status(500).json({
-                    error: true,
-                    message: "username already exists.",
-                });
-            }
-        });
-
-
-        const hash = await hashPassword(result.value.password);
+            console.log('>  checking if username already exists')
+            await User.findOne({
+                username: result.value.username,
+            }).then( (user) => {
+                if (user) {
+                    isError = true;
+                    return res.status(500).json({
+                        error: true,
+                        message: "username already exists.",
+                    });
+                }
+            });
 
 
-        //Generate unique id for the user.
-        result.value.userId = v4();
-
-        delete result.value.confirmPassword;
-        result.value.password = hash;
+            console.log('>  hashing the password')
+            const hash = await hashPassword(result.value.password);
 
 
-        if (!isError) {
+            //Generate unique id for the user.
+            result.value.userId = v4();
+
+            delete result.value.confirmPassword;
+            result.value.password = hash;
+
+            console.log('>  generating activation code')
             const activateEmail = await generateNewActivationCode(result.value.email);
 
             result.value.emailToken = activateEmail.code;
@@ -94,8 +98,14 @@ export const Signup = async (req: Request, res: Response) => {
 
             result.value.referralCode = referralCode();
             const newUser = await new User(result.value);
-            await newUser.save();
+            await newUser.save().then(() => {
+                console.log('>  user should be saved in the DB... ');
+            }).catch(err => {
+                console.log('X  error on saving user on DB: ', err);
+            });
 
+            console.log('>  No errors.')
+            isComplete = true;
             return res.status(200).json({
                 success: true,
                 message: "Registration Success",
@@ -109,6 +119,7 @@ export const Signup = async (req: Request, res: Response) => {
 };
 
 export const Activate = async (req: Request, res: Response) => {
+    console.log('>  Activating user with email: ', req.body['email']);
     try {
         const { email, code } = req.body;
         if (!email || !code) {
@@ -125,28 +136,32 @@ export const Activate = async (req: Request, res: Response) => {
         });
 
         if (!user) {
+            console.log(`X  Activation error: user with email ${email} not found.`)
             return res.status(200).json({
                 error: true,
                 message: "The code is not valid",
             });
         } else {
-            if (user.active)
+            if (user.active) {
+                console.log(`X  Activation error: user with email ${email} is already active`)
                 return res.send({
                     error: true,
                     message: "Account already activated",
                     status: 400,
                 });
+            } else {
+                user.emailToken = null;
+                user.emailTokenExpires = null;
+                user.active = true;
 
-            user.emailToken = null;
-            user.emailTokenExpires = null;
-            user.active = true;
+                await user.save();
 
-            await user.save();
-
-            return res.status(200).json({
-                success: true,
-                message: "Account activated.",
-            });
+                console.log(`>  Activation success: user with email ${email} is now active`);
+                return res.status(200).json({
+                    success: true,
+                    message: "Account activated.",
+                });
+            }
         }
     } catch (error: any) {
         console.error("activation-error: ", error);
