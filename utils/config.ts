@@ -11,10 +11,6 @@ const pathToEnv = path.basename('../.env');
 const environment = dotenv.config({path: pathToEnv});
 
 
-
-console.log('TYPE: ', process.env.TYPE);
-console.log('PROJECT ID: ', process.env.PROJECT_ID);
-
 export const serviceAccount: ServiceAccount = {
     projectId: process.env.PROJECT_ID,
     privateKey: process.env.PRIVATE_KEY?.replace(/\\n/g, '\n'),
