@@ -1,0 +1,176 @@
+import {Request, Response} from "express";
+import {recaptchaVerification} from "../../utils/recaptcha-verification";
+import axios from "axios";
+import {accountURL, GOOGLE_API_BASE_URL} from "../../utils/constants";
+import {hashPassword, User} from "../../schemas/user-schema";
+import {v4} from "uuid";
+import {generateNewActivationCode} from "../../utils/activate-account";
+import {customAlphabet} from "nanoid";
+import Joi from "joi";
+
+const CHARACTER_SET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const referralCode = customAlphabet(CHARACTER_SET, 8);
+
+//Validate user schema
+const userSchema = Joi.object().keys({
+    email: Joi.string().email({ minDomainSegments: 2 }),
+    password: Joi.string().required().min(4),
+    confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
+    username: Joi.string().required().min(4).max(16),
+    recaptchaKey: Joi.string().required(),
+    referrer: Joi.string(),
+});
+
+export const Signup = async (req: Request, res: Response) => {
+    console.log('>  Signup');
+    try {
+        let isError = false;
+        let isComplete = false;
+        console.log('>  validating user schema');
+        const result = await userSchema.validate(req.body);
+        if (result.error) {
+            return await res.status(500).json({
+                error: true,
+                message: result.error.message.toString(),
+            });
+        }
+
+        while (!isError || !isComplete) {
+            console.log('>  checking if user already exists')
+            await User.findOne({
+                email: result.value.email,
+            }).then( (user) => {
+                if (user) {
+                    isError = true;
+                    return res.status(500).json({
+                        error: true,
+                        message: "Email already exists.",
+                    });
+                }
+            });
+
+            console.log('>  checking if username already exists')
+            await User.findOne({
+                username: result.value.username,
+            }).then( (user) => {
+                if (user) {
+                    isError = true;
+                    return res.status(500).json({
+                        error: true,
+                        message: "username already exists.",
+                    });
+                }
+            });
+
+
+            console.log('>  hashing the password')
+            const hash = await hashPassword(result.value.password);
+
+
+            //Generate unique id for the user.
+            result.value.userId = v4();
+
+            delete result.value.confirmPassword;
+            result.value.password = hash;
+
+            console.log('>  generating activation code')
+            const activateEmail = await generateNewActivationCode(result.value.email);
+
+            result.value.emailToken = activateEmail.code;
+            result.value.emailTokenExpires = activateEmail.expiry;
+
+            /*//Check if referred and validate code.
+            if (result.value.hasOwnProperty("referrer") && !isError) {
+                const referrer = await User.findOne({
+                    referralCode: result.value.referrer,
+                });
+                if (!referrer) {
+                    return res.status(400).send({
+                        error: true,
+                        message: "Invalid referral code.",
+                    });
+                }
+            }*/
+
+            result.value.referralCode = referralCode();
+            const newUser = await new User(result.value);
+            await newUser.save().then(() => {
+                console.log('>  user should be saved in the DB... ');
+            }).catch(err => {
+                console.log('X  error on saving user on DB: ', err);
+            });
+
+            console.log('>  No errors.')
+            isComplete = true;
+            return res.status(200).json({
+                success: true,
+                message: "Registration Success",
+                referralCode: result.value.referralCode,
+            });
+        }
+
+    } catch (error) {
+        console.error("Catch error in Signup: ", error);
+    }
+};
+
+export const RegisterWithEmailAndPassword = async (req: Request, res: Response) => {
+    const data = {
+        email: req.body.email,
+        password: req.body.password,
+        confirmPassword: req.body.confirmPassword,
+        username: req.body.username,
+        recaptchaKey: req.body.recaptchaKey,
+        returnSecureToken: true
+    }
+
+    console.log('>  registering with email and password');
+    console.table(data);
+    console.log('\n     ----    ----    \n');
+
+
+
+    console.log('>  waiting for recaptcha verification v2 \n');
+    const recaptcha = await recaptchaVerification(data.recaptchaKey, 'v2').then((res: any) => {
+        console.table(res);
+        console.log('\n     ----    ----    \n');
+        return res;
+    }).catch((err: any) => {
+        console.log('X  error v2');
+        console.table(res);
+        console.log('\n     ----    ----    \n');
+        return err;
+    });
+
+    if (recaptcha.success) {
+        console.log('>  recaptcha valid. Let us continue with the registration');
+        await Signup(req, res).then(async (r) => {
+
+            console.log('>  saving data on Firebase db')
+            if (await r && r?.statusCode !== 500) {
+                axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                    returnSecureToken: data.returnSecureToken
+                }), {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }})
+                    .then(() => {
+                        console.log('>  New user created with email: ', data.email);
+                    })
+                    .catch(error => {
+                        console.error("Google API error: ", error);
+                    });
+            }
+        }).catch(err => {
+            console.log('X  Error during Signup process: ', err);
+        });
+    }
+
+    else {
+        console.log('X  Recaptcha not valid for user: ', data.email);
+        res.send({error: true, message: 're-captcha not valid'})
+    }
+
+}

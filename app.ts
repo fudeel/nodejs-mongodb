@@ -4,13 +4,12 @@ import bodyParser from "body-parser";
 import cors from 'cors';
 import admin from './utils/config';
 import authRoutes from './routes/authenticationRoutes';
-import usersRoutes from './routes/usersRoutes';
 import recaptchaRoutes from "./routes/recaptchaRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import imagesRoutes from "./routes/imagesRoutes";
+import {authenticationURL, BASE_URL} from "./utils/constants";
 
 const PORT = process.env.PORT || 8000;
-const BASE_URL = "/api/v1"
 
 async function run() {
     /**
@@ -43,8 +42,7 @@ app.get("/ping", (req, res) => {
     });
 });
 
-app.use( BASE_URL + "/authentication", authRoutes);
-app.use( BASE_URL + "/users", usersRoutes);
+app.use( BASE_URL + authenticationURL, authRoutes);
 app.use( BASE_URL + "/security", recaptchaRoutes);
 app.use( BASE_URL + "/dashboard", dashboardRoutes);
 app.use( BASE_URL + "/images", imagesRoutes);
