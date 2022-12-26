@@ -35,7 +35,7 @@ export const Signup = async (req: Request, res: Response, next: () => void) => {
                 status: 500,
                 forceLogout: false
             }
-            return res.status(400).send(customResponse);
+            return res.status(500).send(customResponse);
         } else {
             console.log('>  checking if email already exists');
             await User.findOne({

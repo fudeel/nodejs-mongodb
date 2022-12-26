@@ -15,10 +15,10 @@ export const Login = async (body: LoginModel, res: Response, googleIdToken: stri
             const customResponse: CustomResponse = {
                 error: true,
                 message: "Cannot authorize user.",
-                status: 400,
+                status: 500,
                 forceLogout: false
             }
-            return res.status(400).send(customResponse);
+            return res.status(500).send(customResponse);
         }
 
 
