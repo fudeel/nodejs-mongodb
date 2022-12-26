@@ -2,6 +2,7 @@ import jwt, {Secret, VerifyOptions} from 'jsonwebtoken';
 import {User} from "../schemas/user-schema";
 import {recaptchaVerification} from "../utils/recaptcha-verification";
 import {Request, Response} from "express";
+import {CustomResponse} from "../models/CustomResponse";
 
 export async function validateTokenWithRecaptchaV3(req: Request, res: Response, next: () => void) {
     await recaptchaVerification(req.headers['recaptchakey'], 'v3').then(async (r) => {
@@ -10,38 +11,52 @@ export async function validateTokenWithRecaptchaV3(req: Request, res: Response, 
             next();
         } else {
             /* If the recaptchaKey is not valid the user will be forced to leave the application */
-            return res?.status(403)?.json({
+            const customResponse: CustomResponse = {
                 error: true,
                 message: "Not authorized to proceed. Please Login again",
+                status: 403,
                 forceLogout: true
-            });
+            }
+            return res.status(403).send(customResponse);
         }
     }).catch((err: any) => {
         console.log('Error in recaptcha validation v3: ', err);
-        return res?.status(403)?.json({
+        const customResponse: CustomResponse = {
             error: true,
             message: "Not authorized to proceed.",
+            status: 403,
             forceLogout: true
-        });
+        }
+        return res.status(403).send(customResponse);
     });
 }
 
-export async function validateToken(req: Request, res: Response, next: () => void) {
+export async function validateToken(req: any, res: Response, next: () => void) {
     const authorizationHeader = req.headers.authorization;
+    console.log('>  auth token header: ', authorizationHeader);
     let result: any;
-    if (!authorizationHeader)
-        return res.status(401).json({
+    if (!authorizationHeader) {
+        const customResponse: CustomResponse = {
             error: true,
             message: "Access token is missing",
-        });
+            status: 401,
+            forceLogout: true
+        }
+        return res.status(401).send(customResponse);
+    }
+
     let token: string;
-    if (req.headers.authorization) token = req.headers.authorization.split(" ")[1]; // Bearer <token>
+    if (req.headers.authorization) {
+        token = req.headers.authorization.split(" ")[1];
+    } // Bearer <token>
     else {
-        result = {
+        const customResponse: CustomResponse = {
             error: true,
             message: `Authorization error`,
-        };
-        return res.status(403).json(result);
+            status: 403,
+            forceLogout: true
+        }
+        return res.status(403).send(customResponse);
     }
     const options = {
         expiresIn: "1h",
@@ -51,41 +66,51 @@ export async function validateToken(req: Request, res: Response, next: () => voi
             accessToken: token,
         });
         if (!user) {
-            result = {
+            const customResponse: CustomResponse = {
                 error: true,
                 message: `Authorization error`,
-            };
-            return res.status(403).json(result);
+                status: 403,
+                forceLogout: true
+            }
+            return res.status(403).send(customResponse);
         }
 
         result = jwt.verify(token, process.env.JWT_SECRET as Secret, options as VerifyOptions);
 
         if (!user.userId === result.id) {
-            result = {
+            const customResponse: CustomResponse = {
                 error: true,
                 message: `Invalid token`,
-            };
-
-            return res.status(401).json(result);
+                status: 401,
+                forceLogout: true
+            }
+            return res.status(401).send(customResponse);
         }
 
         result["referralCode"] = user.referralCode;
 
-        // req.decoded = result;
+        console.log('result: ', result);
+
+        req.decoded = result;
         next();
     } catch (err: any) {
         // console.log(err);
         if (err.name === "TokenExpiredError") {
-            result = {
+            const customResponse: CustomResponse = {
                 error: true,
-                message: `TokenExpired`,
-            };
+                message: 'Token expired',
+                status: 401,
+                forceLogout: true
+            }
+            return res.status(401).send(customResponse);
         } else {
-            result = {
+            const customResponse: CustomResponse = {
                 error: true,
                 message: `Authentication error`,
-            };
+                status: 403,
+                forceLogout: true
+            }
+            return res.status(403).send(customResponse);
         }
-        return res.status(403).json(result);
     }
 }

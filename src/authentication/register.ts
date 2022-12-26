@@ -7,6 +7,7 @@ import {v4} from "uuid";
 import {generateNewActivationCode} from "../../utils/activate-account";
 import {customAlphabet} from "nanoid";
 import Joi from "joi";
+import {CustomResponse} from "../../models/CustomResponse";
 
 const CHARACTER_SET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const referralCode = customAlphabet(CHARACTER_SET, 8);
@@ -29,10 +30,13 @@ export const Signup = async (req: Request, res: Response) => {
         console.log('>  validating user schema');
         const result = await userSchema.validate(req.body);
         if (result.error) {
-            return await res.status(500).json({
+            const customResponse: CustomResponse = {
                 error: true,
                 message: result.error.message.toString(),
-            });
+                status: 500,
+                forceLogout: false
+            }
+            return res.status(400).send(customResponse);
         }
 
         while (!isError || !isComplete) {
@@ -42,10 +46,13 @@ export const Signup = async (req: Request, res: Response) => {
             }).then( (user) => {
                 if (user) {
                     isError = true;
-                    return res.status(500).json({
+                    const customResponse: CustomResponse = {
                         error: true,
                         message: "Email already exists.",
-                    });
+                        status: 500,
+                        forceLogout: false
+                    }
+                    return res.status(500).send(customResponse);
                 }
             });
 
@@ -55,10 +62,13 @@ export const Signup = async (req: Request, res: Response) => {
             }).then( (user) => {
                 if (user) {
                     isError = true;
-                    return res.status(500).json({
+                    const customResponse: CustomResponse = {
                         error: true,
                         message: "username already exists.",
-                    });
+                        status: 500,
+                        forceLogout: false
+                    }
+                    return res.status(500).send(customResponse);
                 }
             });
 
@@ -102,11 +112,15 @@ export const Signup = async (req: Request, res: Response) => {
 
             console.log('>  No errors.')
             isComplete = true;
-            return res.status(200).json({
+            const customResponse: CustomResponse = {
+                error: false,
                 success: true,
                 message: "Registration Success",
-                referralCode: result.value.referralCode,
-            });
+                status: 200,
+                forceLogout: false,
+                referralCode: result.value.referralCode
+            }
+            return res.status(200).send(customResponse);
         }
 
     } catch (error) {

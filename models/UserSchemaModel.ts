@@ -1,3 +1,7 @@
+import {Method} from "axios";
+import firebase from "firebase/compat";
+import functions = firebase.functions;
+
 export interface UserSchemaModel {
     userId: string;
     accessToken: string | null;
@@ -42,8 +46,10 @@ export interface UserSchemaModel {
         getNotification: boolean;
     };
     sellingItems: string[];
-    emailToken: string | null;
+    emailToken: number | null;
     emailTokenExpires: Date | null;
     referralCode: string;
     referrer: string;
+
+    save?: any;
 }

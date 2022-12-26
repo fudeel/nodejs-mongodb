@@ -4,16 +4,21 @@ import {accountURL, GOOGLE_API_BASE_URL} from "../../utils/constants";
 import {findUser} from "../../utils/find-user";
 import {comparePasswords} from "../../schemas/user-schema";
 import {generateJwt} from "../../utils/generateJwt";
+import {LoginModel} from "../../models/authentication/login-model";
+import {CustomResponse} from "../../models/CustomResponse";
 
-export const Login = async (req: Request, res: Response, googleIdToken: string) => {
+export const Login = async (body: LoginModel, res: Response, googleIdToken: string) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = body;
 
         if (!email || !password) {
-            return res.status(400).json({
+            const customResponse: CustomResponse = {
                 error: true,
                 message: "Cannot authorize user.",
-            });
+                status: 400,
+                forceLogout: false
+            }
+            return res.status(400).send(customResponse);
         }
 
 
@@ -25,31 +30,40 @@ export const Login = async (req: Request, res: Response, googleIdToken: string) 
 
 
         if (!isValid) {
-            return res.status(400).json({
+            const customResponse: CustomResponse = {
                 error: true,
                 message: "Invalid credentials",
-            });
+                status: 400,
+                forceLogout: false
+            }
+            return res.status(400).send(customResponse);
         }
 
         //Generate Access token
 
         const { error, token } = await generateJwt(user.email, user.userId);
         if (error) {
-            return res.status(500).json({
+            const customResponse: CustomResponse = {
                 error: true,
                 message: "Couldn't create access token. Please try again later",
-            });
+                status: 500,
+                forceLogout: false
+            }
+            return res.status(500).send(customResponse);
         }
         user.accessToken = token;
         await user.save();
 
         //Success
-        return res.send({
-            success: true,
+        const customResponse: CustomResponse = {
+            error: true,
             message: "User logged in successfully",
+            status: 200,
+            forceLogout: false,
             accessToken: token,
             idToken: googleIdToken
-        });
+        }
+        return res.status(200).send(customResponse);
     } catch (err) {
         console.error("Login error try-catch", err);
     }
@@ -66,15 +80,13 @@ export const LoginWithEmailAndPassword = async (req: Request, res: Response) => 
             await axios
                 .post(GOOGLE_API_BASE_URL + accountURL + ":signInWithPassword"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
                 .then(r => {
-                    console.log(`user ${data.email} connected successfully with Google oatuh`)
                     const googleIdToken = r.data['idToken'];
-                    Login(req, res, googleIdToken).then(() => {
+                    Login({email: data.email, password: data.password}, res, googleIdToken).then(() => {
                         console.log(`user ${data.email} connected successfully with Sangrya`)
                     });
                 })
-                .catch((error: any) => {
-                    console.error("Google login error: possible error -> User not found or incorrect email/password: ", error);
-                    res.send("User not found or incorrect email/password. ");
+                .catch(() => {
+                    res.send("User not found or incorrect email/password.");
                 });
 
         } catch (err: any) {

@@ -1,7 +1,9 @@
 import {Response} from "express";
 import {User} from "../../schemas/user-schema";
+import {CustomResponse} from "../../models/CustomResponse";
 
 export const Logout = async (req: any, res: Response) => {
+    console.log('req decoded: ',req.decoded);
     try {
         const { id } = req.decoded;
 
@@ -10,18 +12,31 @@ export const Logout = async (req: any, res: Response) => {
         if (user) {
             user.accessToken = null;
             await user.save();
-            return res.send({ success: true, message: "User Logged out" });
+            const customResponse: CustomResponse = {
+                error: false,
+                success: true,
+                message: 'User logged out',
+                status: 200,
+                forceLogout: false
+            }
+            return res.status(200).send(customResponse);
         } else {
-            return res.status(401).send({
+            const customResponse: CustomResponse = {
                 error: true,
-
-            })
+                message: 'Not authorized',
+                status: 401,
+                forceLogout: false
+            }
+            return res.status(401).send(customResponse);
         }
     } catch (error: any) {
         console.error("user-logout-error", error);
-        return res.status(500).json({
+        const customResponse: CustomResponse = {
             error: true,
             message: error.message,
-        });
+            status: 500,
+            forceLogout: false
+        }
+        return res.status(500).send(customResponse);
     }
 };
