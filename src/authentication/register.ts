@@ -42,26 +42,24 @@ export const Signup = async (req: Request, res: Response) => {
                 email: result.value.email,
             }).then( async (user) => {
                 if (user) {
-                    const customResponse: CustomResponse = {
+                    throw<CustomResponse> {
                         error: true,
                         message: "Email already exists.",
                         status: 500,
                         forceLogout: false
                     }
-                    return res.status(500).send(customResponse);
                 } else {
                     console.log('>  checking if username already exists')
                     await User.findOne({
                         username: result.value.username,
                     }).then(async (user) => {
                         if (user) {
-                            const customResponse: CustomResponse = {
+                            throw<CustomResponse> {
                                 error: true,
                                 message: "username already exists.",
                                 status: 500,
                                 forceLogout: false
                             }
-                            return res.status(500).send(customResponse);
                         } else {
                             console.log('>  hashing the password')
                             const hash = await hashPassword(result.value.password);
@@ -118,6 +116,7 @@ export const Signup = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error("Catch error in Signup: ", error);
+        res.status(error.status).send(error);
     }
 };
 
@@ -152,6 +151,7 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
     if (recaptcha.success) {
         console.log('>  recaptcha valid. Let us continue with the registration');
         await Signup(req, res).then(async (r) => {
+            console.log('R: ', r);
             console.log('>  No errors, making post request to Google Firebase')
             axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
                 email: data.email,
@@ -165,7 +165,7 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
                     console.log('>  New user created with email: ', data.email);
                 })
                 .catch(error => {
-                    console.error("Google API error: ", error);
+                    // console.error("Google API error: ", error);
                 });
         }).catch(err => {
             console.log('X  Error during Signup process: ', err);
