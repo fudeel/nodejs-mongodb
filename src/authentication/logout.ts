@@ -3,7 +3,6 @@ import {User} from "../../schemas/user-schema";
 import {CustomResponse} from "../../models/CustomResponse";
 
 export const Logout = async (req: any, res: Response) => {
-    console.log('req decoded: ',req.decoded);
     try {
         const { id } = req.decoded;
 

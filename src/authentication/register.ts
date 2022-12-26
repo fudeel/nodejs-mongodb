@@ -22,7 +22,7 @@ const userSchema = Joi.object().keys({
     referrer: Joi.string(),
 });
 
-export const Signup = async (req: Request, res: Response) => {
+export const Signup = async (req: Request, res: Response, next: () => void) => {
     console.log('>  Signup');
     try {
 
@@ -99,15 +99,7 @@ export const Signup = async (req: Request, res: Response) => {
                             });
 
                             console.log('>  No errors.')
-                            const customResponse: CustomResponse = {
-                                error: false,
-                                success: true,
-                                message: "Registration Success",
-                                status: 200,
-                                forceLogout: false,
-                                referralCode: result.value.referralCode
-                            }
-                            return res.status(200).send(customResponse);
+                            next()
                         }
                     });
                 }
@@ -131,8 +123,6 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
     }
 
     console.log('>  registering with email and password');
-    console.table(data);
-    console.log('\n     ----    ----    \n');
 
 
 
@@ -150,26 +140,31 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
 
     if (recaptcha.success) {
         console.log('>  recaptcha valid. Let us continue with the registration');
-        await Signup(req, res).then(async (r) => {
-            console.log('R: ', r);
-            console.log('>  No errors, making post request to Google Firebase')
-            axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
-                email: data.email,
-                password: data.password,
-                returnSecureToken: data.returnSecureToken
-            }), {
-                headers: {
-                    "Content-Type": "application/json",
-                }})
-                .then(() => {
-                    console.log('>  New user created with email: ', data.email);
-                })
-                .catch(error => {
-                    // console.error("Google API error: ", error);
-                });
-        }).catch(err => {
-            console.log('X  Error during Signup process: ', err);
-        });
+        console.log('>  No errors, making post request to Google Firebase')
+        axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
+            email: data.email,
+            password: data.password,
+            returnSecureToken: data.returnSecureToken
+        }), {
+            headers: {
+                "Content-Type": "application/json",
+            }})
+            .then(() => {
+                console.log('>  New user created with email: ', data.email);
+
+                const customResponse: CustomResponse = {
+                    error: false,
+                    success: true,
+                    message: "Registration Success",
+                    status: 200,
+                    forceLogout: false,
+                    // referralCode: result.value.referralCode
+                }
+                return res.status(200).send(customResponse);
+            })
+            .catch(error => {
+                console.error("Google API error. Please check with debug here");
+            });
     }
 
     else {

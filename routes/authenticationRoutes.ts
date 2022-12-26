@@ -8,7 +8,7 @@
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody";
 import {LoginWithEmailAndPassword} from "../src/authentication/login";
-import {RegisterWithEmailAndPassword} from "../src/authentication/register";
+import {RegisterWithEmailAndPassword, Signup} from "../src/authentication/register";
 import {VerifyAuthenticationToken} from "../src/authentication/verify-auth-token";
 import {getCurrentUserInfo} from "../src/authentication/authenticated-user";
 import {Activate} from "../src/authentication/activate";
@@ -22,7 +22,7 @@ import {sendNewActivationCode} from "../src/authentication/send-new-activation-c
 const router = express.Router();
 
 router.post('/oauth-login', cleanBody, LoginWithEmailAndPassword);
-router.post('/oauth-register', cleanBody, RegisterWithEmailAndPassword);
+router.post('/oauth-register', cleanBody, Signup, RegisterWithEmailAndPassword);
 router.get('/verify-token', cleanBody, VerifyAuthenticationToken);
 router.get('/get-current-user-info', cleanBody, getCurrentUserInfo);
 router.patch("/activate", cleanBody, Activate);
