@@ -25,8 +25,7 @@ const userSchema = Joi.object().keys({
 export const Signup = async (req: Request, res: Response) => {
     console.log('>  Signup');
     try {
-        let isError = false;
-        let isComplete = false;
+
         console.log('>  validating user schema');
         const result = await userSchema.validate(req.body);
         if (result.error) {
@@ -37,15 +36,12 @@ export const Signup = async (req: Request, res: Response) => {
                 forceLogout: false
             }
             return res.status(400).send(customResponse);
-        }
-
-        while (!isError || !isComplete) {
-            console.log('>  checking if user already exists')
+        } else {
+            console.log('>  checking if email already exists');
             await User.findOne({
                 email: result.value.email,
-            }).then( (user) => {
+            }).then( async (user) => {
                 if (user) {
-                    isError = true;
                     const customResponse: CustomResponse = {
                         error: true,
                         message: "Email already exists.",
@@ -53,74 +49,71 @@ export const Signup = async (req: Request, res: Response) => {
                         forceLogout: false
                     }
                     return res.status(500).send(customResponse);
-                }
+                } else {
+                    console.log('>  checking if username already exists')
+                    await User.findOne({
+                        username: result.value.username,
+                    }).then(async (user) => {
+                        if (user) {
+                            const customResponse: CustomResponse = {
+                                error: true,
+                                message: "username already exists.",
+                                status: 500,
+                                forceLogout: false
+                            }
+                            return res.status(500).send(customResponse);
+                        } else {
+                            console.log('>  hashing the password')
+                            const hash = await hashPassword(result.value.password);
+
+
+                            //Generate unique id for the user.
+                            result.value.userId = v4();
+
+                            delete result.value.confirmPassword;
+                            result.value.password = hash;
+
+                            console.log('>  generating activation code')
+                            const activateEmail = await generateNewActivationCode(result.value.email);
+
+                            result.value.emailToken = activateEmail.code;
+                            result.value.emailTokenExpires = activateEmail.expiry;
+
+                            /*//Check if referred and validate code.
+        if (result.value.hasOwnProperty("referrer") && !isError) {
+            const referrer = await User.findOne({
+                referralCode: result.value.referrer,
             });
-
-            console.log('>  checking if username already exists')
-            await User.findOne({
-                username: result.value.username,
-            }).then( (user) => {
-                if (user) {
-                    isError = true;
-                    const customResponse: CustomResponse = {
-                        error: true,
-                        message: "username already exists.",
-                        status: 500,
-                        forceLogout: false
-                    }
-                    return res.status(500).send(customResponse);
-                }
-            });
-
-
-            console.log('>  hashing the password')
-            const hash = await hashPassword(result.value.password);
-
-
-            //Generate unique id for the user.
-            result.value.userId = v4();
-
-            delete result.value.confirmPassword;
-            result.value.password = hash;
-
-            console.log('>  generating activation code')
-            const activateEmail = await generateNewActivationCode(result.value.email);
-
-            result.value.emailToken = activateEmail.code;
-            result.value.emailTokenExpires = activateEmail.expiry;
-
-            /*//Check if referred and validate code.
-            if (result.value.hasOwnProperty("referrer") && !isError) {
-                const referrer = await User.findOne({
-                    referralCode: result.value.referrer,
+            if (!referrer) {
+                return res.status(400).send({
+                    error: true,
+                    message: "Invalid referral code.",
                 });
-                if (!referrer) {
-                    return res.status(400).send({
-                        error: true,
-                        message: "Invalid referral code.",
+            }
+        }*/
+
+                            result.value.referralCode = referralCode();
+                            const newUser = await new User(result.value);
+                            await newUser.save().then(() => {
+                                console.log('>  user should be saved in the DB... ');
+                            }).catch(err => {
+                                console.log('X  error on saving user on DB: ', err);
+                            });
+
+                            console.log('>  No errors.')
+                            const customResponse: CustomResponse = {
+                                error: false,
+                                success: true,
+                                message: "Registration Success",
+                                status: 200,
+                                forceLogout: false,
+                                referralCode: result.value.referralCode
+                            }
+                            return res.status(200).send(customResponse);
+                        }
                     });
                 }
-            }*/
-
-            result.value.referralCode = referralCode();
-            const newUser = await new User(result.value);
-            await newUser.save().then(() => {
-                console.log('>  user should be saved in the DB... ');
-            }).catch(err => {
-                console.log('X  error on saving user on DB: ', err);
             });
-
-            console.log('>  No errors.')
-            isComplete = true;
-            const customResponse: CustomResponse = {
-                error: false,
-                success: true,
-                message: "Registration Success",
-                status: 200,
-                forceLogout: false,
-                referralCode: result.value.referralCode
-            }
-            return res.status(200).send(customResponse);
         }
 
     } catch (error) {
@@ -159,24 +152,21 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
     if (recaptcha.success) {
         console.log('>  recaptcha valid. Let us continue with the registration');
         await Signup(req, res).then(async (r) => {
-
-            console.log('>  saving data on Firebase db')
-            if (await r && r?.statusCode !== 500) {
-                axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
-                    email: data.email,
-                    password: data.password,
-                    returnSecureToken: data.returnSecureToken
-                }), {
-                    headers: {
-                        "Content-Type": "application/json",
-                    }})
-                    .then(() => {
-                        console.log('>  New user created with email: ', data.email);
-                    })
-                    .catch(error => {
-                        console.error("Google API error: ", error);
-                    });
-            }
+            console.log('>  No errors, making post request to Google Firebase')
+            axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
+                email: data.email,
+                password: data.password,
+                returnSecureToken: data.returnSecureToken
+            }), {
+                headers: {
+                    "Content-Type": "application/json",
+                }})
+                .then(() => {
+                    console.log('>  New user created with email: ', data.email);
+                })
+                .catch(error => {
+                    console.error("Google API error: ", error);
+                });
         }).catch(err => {
             console.log('X  Error during Signup process: ', err);
         });
