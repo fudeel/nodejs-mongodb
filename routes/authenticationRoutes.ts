@@ -16,8 +16,9 @@ import {recover, ResetPassword} from "../src/authentication/reset-password";
 import {validateToken} from "../middlewares/validateToken";
 import {ReferredAccounts} from "../src/authentication/referral";
 import {Logout} from "../src/authentication/logout";
-import {checkUserActivation} from "../src/user/user-data.controller";
 import {sendNewActivationCode} from "../src/authentication/send-new-activation-code";
+import {checkUserActivation} from "../src/authentication/verify-activation";
+import {decodeFirebaseToken} from "../utils/decode-firebase-token";
 
 const router = express.Router();
 
@@ -30,7 +31,7 @@ router.patch("/recover", cleanBody, recover);
 router.patch("/reset", cleanBody, ResetPassword);
 router.get("/referred", validateToken, ReferredAccounts);
 router.get("/logout", validateToken, Logout);
-router.post("/verify-active", cleanBody, checkUserActivation);
+router.post("/verify-active", cleanBody, validateToken, decodeFirebaseToken, checkUserActivation);
 router.post("/send-new-active-code", cleanBody, sendNewActivationCode);
 
 export default router;

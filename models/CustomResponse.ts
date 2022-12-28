@@ -6,5 +6,6 @@ export interface CustomResponse {
     forceLogout?: boolean,
     accessToken?: string,
     idToken?: string,
-    referralCode?: string
+    referralCode?: string,
+    user?: any
 }

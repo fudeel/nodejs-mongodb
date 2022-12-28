@@ -1,41 +1,64 @@
 import Joi, {string} from "joi";
-import {decodeToken} from "../../utils/decode-token";
-import {findUser} from "../../utils/find-user";
 import {Request, Response} from "express";
+import axios from "axios";
+import {accountURL, GOOGLE_API_BASE_URL} from "../../utils/constants";
+import {Login} from "../authentication/login";
+import {CustomResponse} from "../../models/CustomResponse";
+import {decodeFirebaseToken} from "../../utils/decode-firebase-token";
+import {findUser} from "../../utils/find-user";
+import mongoose from "mongoose";
+import {User} from "../../schemas/user-schema";
+
+const updateBasicInfoSchema = Joi.object().keys({
+    firstname: Joi.string().required(),
+    lastname: Joi.string().required(),
+    email: Joi.string().required(),
+    phone: Joi.string(),
+    _id: Joi.string().required()
+});
 
 
-export const checkUserActivation = async (req: Request, res: Response) => {
-    if (req.headers['idtoken'] && req.headers['idtoken'] === typeof string) {
-        const decodedEmail = await decodeToken(req.headers['idtoken']);
+export const UpdateBasicInfo = async (req: any, res: Response) => {
 
-        if (!decodedEmail) {
-            return res.status(400).json({
-                error: true,
-                message: "Email empty or not valid format",
-            });
-        }
+    console.log('>  Checking user activation...');
+    console.log('>  Checking mongodb token...: ', req.decoded);
+    console.log('>  Checking firebase token...', req.firebaseDecoded);
 
-        const user = await findUser(decodedEmail, res, false);
+    req.body._id = req.decoded.id;
 
-        res.status(200).send({
-            status: 200,
-            error: false,
-            user: user
-        })
-    }
+    console.log('body: ', req.body);
 
+    console.log('>  decoding...')
 
-    const activationSchema = Joi.object().keys({
-        email: Joi.string().email({ minDomainSegments: 2 })
-    });
-
-    const result = await activationSchema.validate(req.body);
+    console.log('>  Validating schema...')
+    const result = await updateBasicInfoSchema.validate(req.body);
 
     if (result.error) {
-        return res.status(500).json({
+        const customResponse: CustomResponse = {
             error: true,
-            message: result.error.message.toString()
+            message: result.error.message.toString(),
+            status: 500,
+            forceLogout: true
+        }
+        return res.status(500).send(customResponse);
+    } else {
+        console.log('>  getting user...')
+        await User.find(req.headers.accessToken).exec(async (err, docs) => {
+            if (!err) {
+                const _id = new mongoose.Types.ObjectId(docs[0]._id)
+                const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone, basicInfoAvailableToChange: false };
+                console.log('>  trying to update on db')
+
+                await User.findByIdAndUpdate(_id, update).then(() => {
+                    console.log('>  basic info updated on db')
+                    res.status(200).send({error: false, message: 'basic info updated', code: 200});
+                }).catch(err => {
+                    console.log('X  Error in updating basic info on db: ', err);
+                    throw<CustomResponse>{
+                        error: true, message: err.message, code: 500
+                    }
+                });
+            }
         });
     }
-
-}
+};

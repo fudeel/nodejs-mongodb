@@ -56,10 +56,11 @@ export const Login = async (body: LoginModel, res: Response, googleIdToken: stri
 
         //Success
         const customResponse: CustomResponse = {
-            error: true,
+            error: false,
             message: "User logged in successfully",
             status: 200,
             forceLogout: false,
+            success: true,
             accessToken: token,
             idToken: googleIdToken
         }

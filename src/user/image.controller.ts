@@ -31,6 +31,7 @@ export const uploadProfilePicture= async (req: Request, res: Response) => {
 
                             const update = { pic: req.body.picUrl };
                             //const filter = { userId: docs[0].userId };
+                            console.log('ID BEFORE TRANSFORMING: ', docs[0]._id);
                             const _id = new mongoose.Types.ObjectId(docs[0]._id)
                             console.log('>  trying to write on db')
                             await User.findByIdAndUpdate(_id, update).then(() => {

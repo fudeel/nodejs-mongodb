@@ -9,6 +9,8 @@ export interface UserSchemaModel {
     fullname: string;
     email: string;
     active: boolean;
+    basicInfoAvailableToChange: boolean;
+    shippingInfoAvailableToChange: boolean;
     password: string;
     resetPasswordToken: string | null;
     resetPasswordExpires: Date | null;

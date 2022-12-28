@@ -7,7 +7,8 @@ import authRoutes from './routes/authenticationRoutes';
 import recaptchaRoutes from "./routes/recaptchaRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import imagesRoutes from "./routes/imagesRoutes";
-import {authenticationURL, BASE_URL} from "./utils/constants";
+import {authenticationURL, BASE_URL, userURL} from "./utils/constants";
+import userRoutes from "./routes/userRoutes";
 
 const PORT = process.env.PORT || 8000;
 
@@ -43,6 +44,7 @@ app.get("/ping", (req, res) => {
 });
 
 app.use( BASE_URL + authenticationURL, authRoutes);
+app.use( BASE_URL + userURL, userRoutes);
 app.use( BASE_URL + "/security", recaptchaRoutes);
 app.use( BASE_URL + "/dashboard", dashboardRoutes);
 app.use( BASE_URL + "/images", imagesRoutes);
