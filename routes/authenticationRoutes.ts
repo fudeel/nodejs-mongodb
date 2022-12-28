@@ -29,8 +29,8 @@ router.get('/get-current-user-info', cleanBody, getCurrentUserInfo);
 router.patch("/activate", cleanBody, Activate);
 router.patch("/recover", cleanBody, recover);
 router.patch("/reset", cleanBody, ResetPassword);
-router.get("/referred", validateToken, ReferredAccounts);
-router.get("/logout", validateToken, Logout);
+router.get("/referred", validateToken, decodeFirebaseToken, ReferredAccounts);
+router.get("/logout", validateToken, decodeFirebaseToken, Logout);
 router.post("/verify-active", cleanBody, validateToken, decodeFirebaseToken, checkUserActivation);
 router.post("/send-new-active-code", cleanBody, sendNewActivationCode);
 

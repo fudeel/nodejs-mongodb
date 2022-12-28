@@ -6,6 +6,7 @@ export const decodeFirebaseToken = async (req: any, res: Response, next: () => v
     return await admin.auth().verifyIdToken(req.headers['idtoken'])
         .then((decodedToken) => {
             req.firebaseDecoded = decodedToken
+            console.log('>  firebase token is valid');
             next()
         })
         .catch((error) => {
