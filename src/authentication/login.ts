@@ -94,6 +94,6 @@ export const LoginWithEmailAndPassword = async (req: Request, res: Response) => 
             console.log('generic error in try-catch login with username and password: ', err);
             res.send(err);
         } else {
-        res.send({error: true, message: 'Incorrect email or password'});
+        res.send(<CustomResponse>{error: true, message: 'Incorrect email or password', status: 400});
     }
 };

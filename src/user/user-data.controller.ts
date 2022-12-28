@@ -12,7 +12,6 @@ import {User} from "../../schemas/user-schema";
 const updateBasicInfoSchema = Joi.object().keys({
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
-    email: Joi.string().required(),
     phone: Joi.string(),
     _id: Joi.string().required()
 });
@@ -43,22 +42,34 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
         return res.status(500).send(customResponse);
     } else {
         console.log('>  getting user...')
-        await User.find(req.headers.accessToken).exec(async (err, docs) => {
-            if (!err) {
-                const _id = new mongoose.Types.ObjectId(docs[0]._id)
-                const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone, basicInfoAvailableToChange: false };
-                console.log('>  trying to update on db')
+        await User.find(req.headers.accessToken).exec().then(async (docs) => {
+            console.log('docs: ', docs[0].basicInfoAvailableToChange, ' body: ', req.body.basicInfoAvailableToChange);
+            const _id = new mongoose.Types.ObjectId(docs[0]._id)
 
-                await User.findByIdAndUpdate(_id, update).then(() => {
-                    console.log('>  basic info updated on db')
-                    res.status(200).send({error: false, message: 'basic info updated', code: 200});
-                }).catch(err => {
-                    console.log('X  Error in updating basic info on db: ', err);
-                    throw<CustomResponse>{
-                        error: true, message: err.message, code: 500
-                    }
-                });
+            if (!docs[0].basicInfoAvailableToChange) {
+                throw<CustomResponse>{
+                    error: true,
+                    forceLogout: true,
+                    message: 'Are you doing something that you are not allowed to do? Please open a ticket if you need help',
+                    status: 401
+                }
+
             }
-        });
+
+            const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone, basicInfoAvailableToChange: false };
+            console.log('>  trying to update on db')
+
+            await User.findByIdAndUpdate(_id, update).then(() => {
+                console.log('>  basic info updated on db')
+                res.status(200).send(<CustomResponse>{error: false, message: 'basic info updated', code: 200});
+            }).catch(err => {
+                console.log('X  Error in updating basic info on db: ', err);
+                throw<CustomResponse>{
+                    error: true, message: err.message, code: 500
+                }
+            });
+        }).catch(err => {
+            res.status(200).send(<CustomResponse>{error: true, message: err.message, code: 401});
+        })
     }
 };
