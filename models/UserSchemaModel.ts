@@ -12,7 +12,7 @@ export interface UserSchemaModel {
     basicInfoAvailableToChange: boolean;
     shippingInfoAvailableToChange: boolean;
     password: string;
-    resetPasswordToken: string | null;
+    resetPasswordToken: number | null;
     resetPasswordExpires: Date | null;
     isCertified: boolean;
     pic: string;

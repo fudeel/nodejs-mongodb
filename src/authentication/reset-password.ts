@@ -1,6 +1,7 @@
 import {Request, Response} from "express";
 import {hashPassword, User} from "../../schemas/user-schema";
 import {sendEmail} from "../../utils/mailer";
+import {CustomResponse} from "../../models/CustomResponse";
 
 export const ForgotPassword = async (req: Request, res: Response) => {
     try {
@@ -34,7 +35,7 @@ export const ForgotPassword = async (req: Request, res: Response) => {
         }
 
         const expiry = Date.now() + 60 * 1000 * 15;
-        user.resetPasswordToken = code.toString();
+        user.resetPasswordToken = code;
         user.resetPasswordExpires = new Date(expiry); // 15 minutes
 
         await user.save();
@@ -55,13 +56,19 @@ export const ForgotPassword = async (req: Request, res: Response) => {
 
 
 export const ResetPassword = async (req: Request, res: Response) => {
+    console.log('reset password body: ', req.body);
     try {
-        const { passwordResetToken, newPassword, confirmPassword } = req.body;
-        if (!passwordResetToken || !newPassword || !confirmPassword) {
-            return res.status(403).json({
+        const { passwordResetToken, newPassword, confirmNewPassword } = req.body;
+        if (!passwordResetToken || !newPassword || !confirmNewPassword) {
+            console.log('11111');
+            console.log('passwordResetToken', passwordResetToken);
+            console.log('newPassword', newPassword);
+            console.log('confirmNewPassword', confirmNewPassword);
+            return res.status(403).json(<CustomResponse>{
                 error: true,
                 message:
                     "Couldn't process request. Please provide all mandatory fields",
+                status: 403
             });
         }
         const user = await User.findOne({
@@ -69,28 +76,36 @@ export const ResetPassword = async (req: Request, res: Response) => {
             resetPasswordExpires: { $gt: Date.now() },
         });
         if (!user) {
-            return res.send({
+            console.log('2222');
+            return res.send(<CustomResponse>{
                 error: true,
                 message: "Password reset token is invalid or has expired.",
+                status: 401
             });
         }
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({
+        if (newPassword !== confirmNewPassword) {
+            console.log('3333');
+            return res.status(400).json(<CustomResponse>{
                 error: true,
                 message: "Passwords didn't match",
+                status: 400
             });
         }
+
+        console.log('444444');
         user.password = await hashPassword(req.body.newPassword);
         user.resetPasswordToken = null;
-        user.resetPasswordExpires = "";
+        user.resetPasswordExpires = null;
 
         await user.save();
 
+        console.log('555555');
         return res.send({
             success: true,
             message: "Password has been changed",
         });
     } catch (error: any) {
+        console.log('666666');
         console.error("reset-password-error", error);
         return res.status(500).json({
             error: true,
@@ -113,7 +128,7 @@ export const recover = async (req: Request, res: Response) => {
             const code = Math.floor(100000 + Math.random() * 900000);
             const expiry = Date.now() + 60 * 1000 * 15;
             user.resetPasswordToken = code;
-            user.resetPasswordExpires = expiry; // 15 minutes
+            user.resetPasswordExpires = new Date(expiry); // 15 minutes
 
 
             // Save the updated user object
@@ -164,7 +179,7 @@ export const resetPassword = (req: Request, res: Response) => {
 
             // Save
             user.save((err) => {
-                if (err) return res.status(500).json({message: err.message});
+                if (err) return res.status(500).json(<CustomResponse>{error: true, status: 500, message: err.message});
 
             });
         });

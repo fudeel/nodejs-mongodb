@@ -18,15 +18,10 @@ const userSchema = new Schema(
         resetPasswordToken: {
             type: mongoose.Schema.Types.Mixed,
             required: false,
-            validate: (value: string | null) => {
+            validate: (value: number | null) => {
                 return value === null || true;
             }, default: null },
-        resetPasswordExpires: {
-            type: mongoose.Schema.Types.Mixed,
-            required: false,
-            validate: (value: Date | null) => {
-                return value === null || true;
-            }, default: null },
+        resetPasswordExpires: { type: Date, default: null },
         isCertified: { type: Boolean, default: false},
 
         pic: { type: String, default: null },
