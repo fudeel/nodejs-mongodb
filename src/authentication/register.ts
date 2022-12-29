@@ -130,12 +130,17 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
     const recaptcha = await recaptchaVerification(data.recaptchaKey, 'v2').then((res: any) => {
         console.table(res);
         console.log('\n     ----    ----    \n');
+        console.log('> Recaptcha OK: ', res);
         return res;
     }).catch((err: any) => {
         console.log('X  error v2');
-        console.table(res);
+        console.table(err);
         console.log('\n     ----    ----    \n');
-        return err;
+        throw<CustomResponse> {
+            error: true,
+            message: err.message,
+            status: 401
+        }
     });
 
     if (recaptcha.success) {
