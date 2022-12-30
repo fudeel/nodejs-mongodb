@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcrypt';
+import {UpdateShippingAddressInfoModel} from "../models/user/update-shipping-address-info-model";
 
 
 const Schema = mongoose.Schema;
@@ -29,7 +30,13 @@ const userSchema = new Schema(
         occupation: { type: String, default: null },
         companyName: { type: String, default: null },
         phone: { type: String, default: null },
-        address: Schema.Types.Mixed,
+        address: {
+            type: mongoose.Schema.Types.Mixed,
+            required: false,
+            validate: (value: UpdateShippingAddressInfoModel | null) => {
+                return value === null || true;
+            }, default: null
+        },
         socialNetworks: Schema.Types.Mixed,
         firstname: { type: String, default: null },
         lastname: { type: String, default: null },

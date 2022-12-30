@@ -7,12 +7,13 @@
 
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody";
-import {UpdateBasicInfo} from "../src/user/user-data.controller";
+import {UpdateBasicInfo, UpdateShippingAddressInfo} from "../src/user/user-data.controller";
 import {validateToken} from "../middlewares/validateToken";
 import {decodeFirebaseToken} from "../utils/decode-firebase-token";
 
 const router = express.Router();
 
 router.patch('/update-basic-info', cleanBody, validateToken, decodeFirebaseToken, UpdateBasicInfo);
+router.patch('/update-shipping-address-info', cleanBody, validateToken, decodeFirebaseToken, UpdateShippingAddressInfo);
 
 export default router;

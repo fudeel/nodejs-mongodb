@@ -1,11 +1,6 @@
 import Joi, {string} from "joi";
 import {Request, Response} from "express";
-import axios from "axios";
-import {accountURL, GOOGLE_API_BASE_URL} from "../../utils/constants";
-import {Login} from "../authentication/login";
 import {CustomResponse} from "../../models/CustomResponse";
-import {decodeFirebaseToken} from "../../utils/decode-firebase-token";
-import {findUser} from "../../utils/find-user";
 import mongoose from "mongoose";
 import {User} from "../../schemas/user-schema";
 
@@ -13,6 +8,16 @@ const updateBasicInfoSchema = Joi.object().keys({
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
     phone: Joi.string(),
+    _id: Joi.string().required()
+});
+
+const shippingInfoSchema = Joi.object().keys({
+    country: Joi.string().required(),
+    state: Joi.string().required(),
+    city: Joi.string().required(),
+    zip: Joi.string().required(),
+    streetOne: Joi.string().required(),
+    streetTwo: Joi.string().optional().allow(''),
     _id: Joi.string().required()
 });
 
@@ -47,12 +52,13 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
             const _id = new mongoose.Types.ObjectId(docs[0]._id)
 
             if (!docs[0].basicInfoAvailableToChange) {
-                throw<CustomResponse>{
+                const customResponse: CustomResponse = {
                     error: true,
                     forceLogout: true,
                     message: 'Are you doing something that you are not allowed to do? Please open a ticket if you need help',
                     status: 401
                 }
+                return res.status(customResponse.status).send(customResponse);
 
             }
 
@@ -69,7 +75,75 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
                 }
             });
         }).catch(err => {
-            res.status(200).send(<CustomResponse>{error: true, message: err.message, code: 401});
+            res.status(401).send(<CustomResponse>{error: true, message: err.message, code: 401});
+        })
+    }
+};
+
+export const UpdateShippingAddressInfo = async (req: any, res: Response) => {
+
+    console.log('>  Checking user activation...');
+    req.body._id = req.decoded.id;
+    console.log('body: ', req.body);
+    console.log('>  decoding...')
+    console.log('>  Validating schema...')
+    const result = await shippingInfoSchema.validate(req.body);
+
+    console.log('AAAA: ', result);
+
+    if (result.error) {
+        throw<CustomResponse>{
+            error: true,
+            message: result.error.message.toString(),
+            status: 500,
+            forceLogout: true
+        }
+    } else {
+        console.log('>  getting user...')
+        await User.find(req.headers.accessToken).exec().then(async (docs) => {
+            console.log('docs: ', docs[0].shippingInfoAvailableToChange);
+            const _id = new mongoose.Types.ObjectId(docs[0]._id)
+
+            if (!docs[0].shippingInfoAvailableToChange) {
+                const customResponse: CustomResponse = {
+                    error: true,
+                    forceLogout: true,
+                    message: 'Are you doing something that you are not allowed to do? Please open a ticket if you need help',
+                    status: 401
+                }
+                return res.status(customResponse.status).send(customResponse);
+
+            }
+
+            const update = {
+                address: {
+                    country: req.body.country,
+                    state: req.body.state,
+                    city: req.body.city,
+                    zip: req.body.zip,
+                    streetOne: req.body.streetOne,
+                    streetTwo: req.body.streetTwo
+                },
+                shippingInfoAvailableToChange: false };
+
+
+
+            await User.findByIdAndUpdate(_id, update).then(() => {
+                console.log('>  trying to update on db')
+                console.log('>  shipping address info updated on db')
+                res.status(200).send(<CustomResponse>{error: false, message: 'shipping address info updated', code: 200});
+            }).catch(err => {
+                console.log('X  Error in updating basic info on db: ', err);
+                const customResponse: CustomResponse = {
+                    error: true,
+                    forceLogout: true,
+                    message: err.message,
+                    status: 500
+                }
+                return res.status(customResponse.status).send(customResponse);
+            });
+        }).catch(err => {
+            res.status(401).send(<CustomResponse>{error: true, message: err.message, code: 401});
         })
     }
 };
