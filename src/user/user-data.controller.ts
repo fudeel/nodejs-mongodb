@@ -101,10 +101,10 @@ export const UpdateShippingAddressInfo = async (req: any, res: Response) => {
     } else {
         console.log('>  getting user...')
         await User.find(req.headers.accessToken).exec().then(async (docs) => {
-            console.log('docs: ', docs[0].shippingInfoAvailableToChange);
+            console.log('docs: ', docs[0].userMustInsertShippingAddress);
             const _id = new mongoose.Types.ObjectId(docs[0]._id)
 
-            if (!docs[0].shippingInfoAvailableToChange) {
+            /*if (!docs[0].userMustInsertShippingAddress) {
                 const customResponse: CustomResponse = {
                     error: true,
                     forceLogout: true,
@@ -113,7 +113,7 @@ export const UpdateShippingAddressInfo = async (req: any, res: Response) => {
                 }
                 return res.status(customResponse.status).send(customResponse);
 
-            }
+            }*/
 
             const update = {
                 address: {
@@ -124,7 +124,7 @@ export const UpdateShippingAddressInfo = async (req: any, res: Response) => {
                     streetOne: req.body.streetOne,
                     streetTwo: req.body.streetTwo
                 },
-                shippingInfoAvailableToChange: false };
+                userMustInsertShippingAddress: false };
 
 
 

@@ -9,7 +9,7 @@ export const getCurrentUserInfo = async (req: Request, res: Response) => {
             try {
                 if (req.headers['authorization']) {
                     const accessToken = req.headers['authorization'].slice(7);
-                    await User.find({accessToken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange shippingInfoAvailableToChange').exec((err, docs) => {
+                    await User.find({accessToken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress').exec((err, docs) => {
                         if (!err) {
                             res.status(200).send(docs);
                         } else {

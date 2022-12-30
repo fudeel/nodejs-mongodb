@@ -31,8 +31,8 @@ export async function sendEmail(email: string, code: number, action: "activate" 
     const new_password_body = `<!DOCTYPE> 
     <html>
       <body>
-      <p>Click the link below to reset your password</p>
-      <a href="${link}">${link}</a>
+        <p>The password reset code is: </p> 
+        <p class="bolder">${code}</p>
       <p>If you did not request a password change, ignore this email.</p>
     </html>`;
 

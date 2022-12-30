@@ -14,7 +14,7 @@ const userSchema = new Schema(
         email: { type: String, required: true, unique: true },
         active: { type: Boolean, default: false },
         basicInfoAvailableToChange: { type: Boolean, default: true },
-        shippingInfoAvailableToChange: { type: Boolean, default: true },
+        userMustInsertShippingAddress: { type: Boolean, default: true },
         password: { type: String, required: true },
         resetPasswordToken: {
             type: mongoose.Schema.Types.Mixed,
