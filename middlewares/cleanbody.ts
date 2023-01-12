@@ -6,7 +6,6 @@ export const cleanBody = (req: Request, res: Response, next: () => void) => {
     req.body = sanitize(req.body);
     next();
   } catch (error) {
-
     return res.status(500).json({
       error: true,
       message: "Could not sanitize body",

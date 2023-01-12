@@ -1,5 +1,4 @@
 import {Request, Response} from "express";
-import {recaptchaVerification} from "../../utils/recaptcha-verification";
 import axios from "axios";
 import {accountURL, GOOGLE_API_BASE_URL} from "../../utils/constants";
 import {hashPassword, User} from "../../schemas/user-schema";
@@ -19,6 +18,7 @@ const userSchema = Joi.object().keys({
     confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
     username: Joi.string().required().min(4).max(16),
     recaptchaKey: Joi.string().required(),
+    version: Joi.string().required(),
     referrer: Joi.string(),
 });
 
@@ -118,34 +118,12 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
         password: req.body.password,
         confirmPassword: req.body.confirmPassword,
         username: req.body.username,
-        recaptchaKey: req.body.recaptchaKey,
         returnSecureToken: true
     }
 
-    console.log('>  registering with email and password');
+    console.log('>  registering with email and password on Google System');
 
-
-
-    console.log('>  waiting for recaptcha verification v2 \n');
-    const recaptcha = await recaptchaVerification(data.recaptchaKey, 'v2').then((res: any) => {
-        console.table(res);
-        console.log('\n     ----    ----    \n');
-        console.log('> Recaptcha OK: ', res);
-        return res;
-    }).catch((err: any) => {
-        console.log('X  error v2');
-        console.table(err);
-        console.log('\n     ----    ----    \n');
-        throw<CustomResponse> {
-            error: true,
-            message: err.message,
-            status: 401
-        }
-    });
-
-    if (recaptcha.success) {
-        console.log('>  recaptcha valid. Let us continue with the registration');
-        console.log('>  No errors, making post request to Google Firebase')
+    try {
         axios.post(GOOGLE_API_BASE_URL + accountURL + ":signUp"+"?key=" +process.env.OAUTH_CLIENT_ID, JSON.stringify({
             email: data.email,
             password: data.password,
@@ -169,12 +147,15 @@ export const RegisterWithEmailAndPassword = async (req: Request, res: Response) 
             })
             .catch(error => {
                 console.error("Google API error. Please check with debug here");
+                throw<CustomResponse> {
+                    error: true,
+                    message: 'Google API error. Please check with debug here',
+                    forceLogout: true,
+                    status: 500
+                }
             });
-    }
-
-    else {
-        console.log('X  Recaptcha not valid for user: ', data.email);
-        res.send({error: true, message: 're-captcha not valid'})
+    } catch (e) {
+        res.status(e.status).send(e);
     }
 
 }

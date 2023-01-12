@@ -19,11 +19,12 @@ import {Logout} from "../src/authentication/logout";
 import {sendNewActivationCode} from "../src/authentication/send-new-activation-code";
 import {checkUserActivation} from "../src/authentication/verify-activation";
 import {decodeFirebaseToken} from "../utils/decode-firebase-token";
+import {recaptchaVerification} from "../middlewares/recaptcha-verification";
 
 const router = express.Router();
 
 router.post('/oauth-login', cleanBody, GoogleLogin, Login);
-router.post('/oauth-register', cleanBody, Signup, RegisterWithEmailAndPassword);
+router.post('/oauth-register', cleanBody, recaptchaVerification, Signup, RegisterWithEmailAndPassword);
 router.get('/verify-token', cleanBody, VerifyAuthenticationToken);
 router.get('/get-current-user-info', cleanBody, getCurrentUserInfo);
 router.patch("/activate", cleanBody, Activate);
