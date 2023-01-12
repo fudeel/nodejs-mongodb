@@ -7,7 +7,7 @@
 
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody";
-import {LoginWithEmailAndPassword} from "../src/authentication/login";
+import {GoogleLogin, Login} from "../src/authentication/login";
 import {RegisterWithEmailAndPassword, Signup} from "../src/authentication/register";
 import {VerifyAuthenticationToken} from "../src/authentication/verify-auth-token";
 import {getCurrentUserInfo} from "../src/authentication/authenticated-user";
@@ -22,7 +22,7 @@ import {decodeFirebaseToken} from "../utils/decode-firebase-token";
 
 const router = express.Router();
 
-router.post('/oauth-login', cleanBody, LoginWithEmailAndPassword);
+router.post('/oauth-login', cleanBody, GoogleLogin, Login);
 router.post('/oauth-register', cleanBody, Signup, RegisterWithEmailAndPassword);
 router.get('/verify-token', cleanBody, VerifyAuthenticationToken);
 router.get('/get-current-user-info', cleanBody, getCurrentUserInfo);

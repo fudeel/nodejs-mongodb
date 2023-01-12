@@ -43,6 +43,7 @@ const userSchema = new Schema(
         website: { type: String, default: null },
         language: { type: String, default: null },
         timeZone: { type: String, default: null },
+        rating: { type: Number, default: 50 },
         communication: Schema.Types.Mixed,
         emailSettings: Schema.Types.Mixed,
 

@@ -4,12 +4,16 @@ import {accountURL, GOOGLE_API_BASE_URL} from "../../utils/constants";
 import {findUser} from "../../utils/find-user";
 import {comparePasswords} from "../../schemas/user-schema";
 import {generateJwt} from "../../utils/generateJwt";
-import {LoginModel} from "../../models/authentication/login-model";
 import {CustomResponse} from "../../models/CustomResponse";
 
-export const Login = async (body: LoginModel, res: Response, googleIdToken: string) => {
+export const Login = async (req: any, res: Response) => {
+    console.table({
+        email: req.body.email,
+        password: req.body.password,
+        idToken: req.body.idToken
+    })
     try {
-        const { email, password } = body;
+        const { email, password } = req.body;
 
         if (!email || !password) {
             const customResponse: CustomResponse = {
@@ -62,7 +66,7 @@ export const Login = async (body: LoginModel, res: Response, googleIdToken: stri
             forceLogout: false,
             success: true,
             accessToken: token,
-            idToken: googleIdToken
+            idToken: req.body.idToken
         }
         return res.status(200).send(customResponse);
     } catch (err) {
@@ -70,30 +74,38 @@ export const Login = async (body: LoginModel, res: Response, googleIdToken: stri
     }
 };
 
-export const LoginWithEmailAndPassword = async (req: Request, res: Response) => {
+export const GoogleLogin = async (req: Request | any, res: Response, next: () => void ) => {
     const data = {
         email: req.body.email,
         password: req.body.password,
         returnSecureToken: true
     }
+
+    console.log('logging in google system with these data');
+    console.table(data);
+
+
     if (data.email !== null && data.email !== '' && data.password !== null && data.password !== '')
         try {
             await axios
                 .post(GOOGLE_API_BASE_URL + accountURL + ":signInWithPassword"+"?key=" +process.env.OAUTH_CLIENT_ID, data)
                 .then(r => {
-                    const googleIdToken = r.data['idToken'];
-                    Login({email: data.email, password: data.password}, res, googleIdToken).then(() => {
-                        console.log(`user ${data.email} connected successfully with Sangrya`)
-                    });
+                    req.idToken = r.data['idToken'];
+                    next();
                 })
                 .catch(() => {
-                    res.send("User not found or incorrect email/password.");
+                    throw<CustomResponse> {
+                        error: true,
+                        status: 404,
+                        message: 'User not found or incorrect email/password.'
+                    }
                 });
 
         } catch (err: any) {
             console.log('generic error in try-catch login with username and password: ', err);
-            res.send(err);
+            res.status(err.status).send(err);
         } else {
-        res.send(<CustomResponse>{error: true, message: 'Incorrect email or password', status: 400});
+        console.log('error in login oatuh');
+        res.status(400).send(<CustomResponse>{error: true, message: 'Incorrect email or password', status: 400});
     }
-};
+}
