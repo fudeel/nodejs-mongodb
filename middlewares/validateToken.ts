@@ -62,8 +62,6 @@ export async function validateToken(req: any, res: Response, next: () => void) {
 
         result["referralCode"] = user.referralCode;
 
-        console.log('result: ', result);
-
         req.decoded = result;
         next();
     } catch (err: any) {

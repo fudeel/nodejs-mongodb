@@ -27,8 +27,6 @@ export const uploadProfilePicture= async (req: Request, res: Response) => {
                                 status: 500
                             }
                         } else {
-                            console.log('aaaa: ', result);
-
                             const update = { pic: req.body.picUrl };
                             //const filter = { userId: docs[0].userId };
                             console.log('ID BEFORE TRANSFORMING: ', docs[0]._id);

@@ -77,7 +77,6 @@ export const getEvents = async (req: Request, res: Response) => {
             }
         ]).exec((err, docs) => {
             if (!err) {
-                console.log('DOCS: ', docs);
                 res.status(200).send(docs);
             } else {
                 console.log('POISTION ERROR: ', err);
@@ -118,7 +117,6 @@ export const getAllCreatorsByFilter = async (req: Request, res: Response) => {
             }
         ]).exec((err, docs) => {
             if (!err) {
-                console.log('DOCS: ', docs);
                 res.status(200).send(docs);
             } else {
                 console.log('POISTION ERROR: ', err);

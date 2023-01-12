@@ -30,7 +30,6 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
 
     req.body._id = req.decoded.id;
 
-    console.log('body: ', req.body);
 
     console.log('>  decoding...')
 
@@ -84,7 +83,6 @@ export const UpdateShippingAddressInfo = async (req: any, res: Response) => {
 
     console.log('>  Checking user activation...');
     req.body._id = req.decoded.id;
-    console.log('body: ', req.body);
     console.log('>  decoding...')
     console.log('>  Validating schema...')
     const result = await shippingInfoSchema.validate(req.body);

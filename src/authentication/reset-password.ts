@@ -56,14 +56,11 @@ export const ForgotPassword = async (req: Request, res: Response) => {
 
 
 export const ResetPassword = async (req: Request, res: Response) => {
-    console.log('reset password body: ', req.body);
     try {
         const { passwordResetToken, newPassword, confirmNewPassword } = req.body;
         if (!passwordResetToken || !newPassword || !confirmNewPassword) {
             console.log('11111');
-            console.log('passwordResetToken', passwordResetToken);
-            console.log('newPassword', newPassword);
-            console.log('confirmNewPassword', confirmNewPassword);
+
             return res.status(403).json(<CustomResponse>{
                 error: true,
                 message:
