@@ -1,6 +1,5 @@
 import {Request, Response} from "express";
 import Joi, {string} from "joi";
-import {decodeFirebaseToken} from "../../utils/decode-firebase-token";
 import {findUser} from "../../utils/find-user";
 import {CustomResponse} from "../../models/CustomResponse";
 

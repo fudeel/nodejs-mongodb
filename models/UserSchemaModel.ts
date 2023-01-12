@@ -1,7 +1,3 @@
-import {Method} from "axios";
-import firebase from "firebase/compat";
-import functions = firebase.functions;
-
 export interface UserSchemaModel {
     userId: string;
     accessToken: string | null;

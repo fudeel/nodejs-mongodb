@@ -7,9 +7,8 @@
 
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody";
-import {GoogleLogin, Login} from "../src/authentication/login";
-import {RegisterWithEmailAndPassword, Signup} from "../src/authentication/register";
-import {VerifyAuthenticationToken} from "../src/authentication/verify-auth-token";
+import {Login} from "../src/authentication/login";
+import {Signup} from "../src/authentication/register";
 import {getCurrentUserInfo} from "../src/authentication/authenticated-user";
 import {Activate} from "../src/authentication/activate";
 import {recover, ResetPassword} from "../src/authentication/reset-password";
@@ -18,21 +17,19 @@ import {ReferredAccounts} from "../src/authentication/referral";
 import {Logout} from "../src/authentication/logout";
 import {sendNewActivationCode} from "../src/authentication/send-new-activation-code";
 import {checkUserActivation} from "../src/authentication/verify-activation";
-import {decodeFirebaseToken} from "../utils/decode-firebase-token";
 import {recaptchaVerification} from "../middlewares/recaptcha-verification";
 
 const router = express.Router();
 
-router.post('/oauth-login', cleanBody, GoogleLogin, Login);
-router.post('/oauth-register', cleanBody, recaptchaVerification, Signup, RegisterWithEmailAndPassword);
-router.get('/verify-token', cleanBody, VerifyAuthenticationToken);
+router.post('/oauth-login', cleanBody, Login);
+router.post('/oauth-register', cleanBody, recaptchaVerification, Signup);
 router.get('/get-current-user-info', cleanBody, getCurrentUserInfo);
 router.patch("/activate", cleanBody, Activate);
 router.patch("/recover", cleanBody, recover);
 router.patch("/reset", cleanBody, ResetPassword);
-router.get("/referred", validateToken, decodeFirebaseToken, ReferredAccounts);
-router.get("/logout", validateToken, decodeFirebaseToken, Logout);
-router.post("/verify-active", cleanBody, validateToken, decodeFirebaseToken, checkUserActivation);
+router.get("/referred", validateToken, ReferredAccounts);
+router.get("/logout", validateToken, Logout);
+router.post("/verify-active", cleanBody, validateToken, checkUserActivation);
 router.post("/send-new-active-code", cleanBody, sendNewActivationCode);
 
 export default router;

@@ -8,7 +8,4 @@ router.post("/get-all-events", cleanBody, getEvents);
 router.post("/get-users-by-filter", cleanBody, GetUsersByFilter);
 
 
-
-
-
 export default router;

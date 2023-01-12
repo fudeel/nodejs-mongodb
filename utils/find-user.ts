@@ -1,5 +1,6 @@
 import {User} from "../schemas/user-schema";
 import {generateNewActivationCode} from "./activate-account";
+import {CustomResponse} from "../models/CustomResponse";
 
 export const findUser = async (email: string, res: Response | any, generateCode: boolean) => {
     //1. Find if any account with that email exists in DB
@@ -7,9 +8,11 @@ export const findUser = async (email: string, res: Response | any, generateCode:
 
     // NOT FOUND - Throw error
     if (!user) {
-        return res.status(404).json({
+        return res.status(404).json(<CustomResponse>{
             error: true,
-            message: "Account not found",
+            message: "Incorrect email/password or account not found",
+            forceLogout: true,
+            status: 404
         });
     }
 
