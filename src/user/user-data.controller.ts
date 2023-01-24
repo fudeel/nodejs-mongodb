@@ -3,6 +3,7 @@ import {Request, Response} from "express";
 import {CustomResponse} from "../../models/CustomResponse";
 import mongoose from "mongoose";
 import {User} from "../../schemas/user-schema";
+import {SocialNetworkModel} from "../../models/user/social-network-model";
 
 const updateBasicInfoSchema = Joi.object().keys({
     firstname: Joi.string().required(),
@@ -18,6 +19,17 @@ const shippingInfoSchema = Joi.object().keys({
     zip: Joi.string().required(),
     streetOne: Joi.string().required(),
     streetTwo: Joi.string().optional().allow(''),
+    _id: Joi.string().required()
+});
+
+const updateSocialNetworkSchema = Joi.object().keys({
+    form: Joi.object().keys({
+        instagram: Joi.string().optional().allow(''),
+        tiktok: Joi.string().optional().allow(''),
+        twitch: Joi.string().optional().allow(''),
+        twitter: Joi.string().optional().allow('')
+    }),
+    isAskingBecomeSeller: Joi.boolean().required().default(false),
     _id: Joi.string().required()
 });
 
@@ -132,6 +144,74 @@ export const UpdateShippingAddressInfo = async (req: any, res: Response) => {
                 res.status(200).send(<CustomResponse>{error: false, message: 'shipping address info updated', code: 200});
             }).catch(err => {
                 console.log('X  Error in updating basic info on db: ', err);
+                const customResponse: CustomResponse = {
+                    error: true,
+                    forceLogout: true,
+                    message: err.message,
+                    status: 500
+                }
+                return res.status(customResponse.status).send(customResponse);
+            });
+        }).catch(err => {
+            res.status(401).send(<CustomResponse>{error: true, message: err.message, code: 401});
+        })
+    }
+};
+
+export const UpdateSocialNetwork = async (req: any, res: Response) => {
+
+    console.log('SOCIAL NETWORK UPDATE BODY: ', req.body);
+    console.log('>  Checking user activation...');
+    req.body._id = req.decoded.id;
+    console.log('>  decoding...')
+    console.log('>  Validating schema...')
+    const result = await updateSocialNetworkSchema.validate(req.body);
+
+    if (result.error) {
+        throw<CustomResponse>{
+            error: true,
+            message: result.error.message.toString(),
+            status: 500,
+            forceLogout: true
+        }
+    } else {
+        console.log('>  getting user...')
+        await User.find(req.headers.accessToken).exec().then(async (docs) => {
+            console.log('docs: ', docs[0].userMustInsertShippingAddress);
+            const _id = new mongoose.Types.ObjectId(docs[0]._id)
+
+            const update = {
+                socialNetwork: <SocialNetworkModel>{
+                    instagram: req.body.form.instagram,
+                    tiktok: req.body.form.tiktok,
+                    twitch: req.body.form.twitch,
+                    twitter: req.body.form.twitter,
+                },
+            };
+
+
+            console.log('>  trying to update on db')
+            await User.findByIdAndUpdate(_id, update).then(async (value) => {
+                console.log('>  verifiyng if there is no other pending or denied request')
+                if (value.becomeSellerRequest !== 'PENDING' && value.becomeSellerRequest !== 'DENIED' ) {
+                    const updateBecomeSellerRequest = {
+                        becomeSellerRequest: req.body.isAskingBecomeSeller ? 'PENDING' : null
+                    }
+
+                    console.log('>  user has no pending or denied request')
+
+                    await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+                        console.log('>  social network and become seller request updated on db')
+                        res.status(200).send(<CustomResponse>{error: false, message: 'social network and become seller request updated', code: 200});
+                    })
+                } else {
+                    console.log('>  user has already a pending or denied request')
+                    console.log('>  social network updated on db')
+                    res.status(200).send(<CustomResponse>{error: false, message: 'social network updated', code: 200});
+                }
+
+            }).catch(err => {
+                console.log('X  Error in updating social network db: ', err);
                 const customResponse: CustomResponse = {
                     error: true,
                     forceLogout: true,

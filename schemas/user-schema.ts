@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcrypt';
 import {UpdateShippingAddressInfoModel} from "../models/user/update-shipping-address-info-model";
+import {SocialNetworkModel} from "../models/user/social-network-model";
 
 
 const Schema = mongoose.Schema;
@@ -37,7 +38,14 @@ const userSchema = new Schema(
                 return value === null || true;
             }, default: null
         },
-        socialNetworks: Schema.Types.Mixed,
+        socialNetwork: {
+            type: mongoose.Schema.Types.Mixed,
+            required: false,
+            validate: (value: SocialNetworkModel | null) => {
+                return value === null || true;
+            }, default: null
+        },
+        becomeSellerRequest: { type: String, default: null },
         firstname: { type: String, default: null },
         lastname: { type: String, default: null },
         website: { type: String, default: null },

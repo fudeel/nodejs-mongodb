@@ -1,3 +1,5 @@
+import {SocialNetworkModel} from "./user/social-network-model";
+
 export interface UserSchemaModel {
     userId: string;
     accessToken: string | null;
@@ -22,14 +24,8 @@ export interface UserSchemaModel {
         state: string;
         zip: string;
     };
-    socialNetworks: {
-        google: string
-        facebook: string;
-        instagram: string;
-        linkedin: string;
-        twitter: string;
-        tiktok: string;
-    };
+    socialNetwork: SocialNetworkModel;
+    becomeSellerRequest: null | 'PENDING' | 'DENIED';
     firstname: string;
     lastname: string;
     website: string;
