@@ -254,10 +254,6 @@ export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
                 throw <CustomResponse> {error: true, message: 'user has already a pending or denied request', code: 401}
             }
 
-            console.log('aaaaaaaa: ', docs);
-
-            console.log('>  trying to find user on db')
-
         }).catch(err => {
             res.status(err.code).send(<CustomResponse>{error: true, message: err.message, code: 500});
         })
