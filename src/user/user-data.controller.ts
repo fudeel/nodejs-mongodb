@@ -33,6 +33,12 @@ const updateSocialNetworkSchema = Joi.object().keys({
     _id: Joi.string().required()
 });
 
+const updateBecomeSellerRequestSchema = Joi.object().keys({
+    isAskingBecomeSeller: Joi.boolean().required().default(false),
+    _id: Joi.string().required()
+});
+
+
 
 export const UpdateBasicInfo = async (req: any, res: Response) => {
 
@@ -191,25 +197,9 @@ export const UpdateSocialNetwork = async (req: any, res: Response) => {
 
 
             console.log('>  trying to update on db')
-            await User.findByIdAndUpdate(_id, update).then(async (value) => {
-                console.log('>  verifiyng if there is no other pending or denied request')
-                if (value.becomeSellerRequest !== 'PENDING' && value.becomeSellerRequest !== 'DENIED' ) {
-                    const updateBecomeSellerRequest = {
-                        becomeSellerRequest: req.body.isAskingBecomeSeller ? 'PENDING' : null
-                    }
-
-                    console.log('>  user has no pending or denied request')
-
-                    await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
-                        console.log('>  social network and become seller request updated on db')
-                        res.status(200).send(<CustomResponse>{error: false, message: 'social network and become seller request updated', code: 200});
-                    })
-                } else {
-                    console.log('>  user has already a pending or denied request')
-                    console.log('>  social network updated on db')
-                    res.status(200).send(<CustomResponse>{error: false, message: 'social network updated', code: 200});
-                }
-
+            await User.findByIdAndUpdate(_id, update).then(() => {
+                console.log('>  social network updated on db')
+                res.status(200).send(<CustomResponse>{error: false, message: 'social network updated', code: 200});
             }).catch(err => {
                 console.log('X  Error in updating social network db: ', err);
                 const customResponse: CustomResponse = {
@@ -222,6 +212,54 @@ export const UpdateSocialNetwork = async (req: any, res: Response) => {
             });
         }).catch(err => {
             res.status(401).send(<CustomResponse>{error: true, message: err.message, code: 401});
+        })
+    }
+};
+
+
+export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
+
+    console.log('Become seller request body: ', req.body);
+    console.log('>  Checking user activation...');
+    req.body._id = req.decoded.id;
+    console.log('>  decoding...')
+    console.log('>  Validating schema...')
+    const result = await updateBecomeSellerRequestSchema.validate(req.body);
+
+    if (result.error) {
+        throw<CustomResponse>{
+            error: true,
+            message: result.error.message.toString(),
+            status: 500,
+            forceLogout: true
+        }
+    } else {
+        console.log('>  getting user...')
+        await User.find(req.headers.accessToken).exec().then(async (docs) => {
+            const _id = new mongoose.Types.ObjectId(docs[0]._id)
+
+            if (docs[0].becomeSellerRequest !== 'PENDING' && docs[0].becomeSellerRequest !== 'DENIED' ) {
+                const updateBecomeSellerRequest = {
+                    becomeSellerRequest: req.body.isAskingBecomeSeller ? 'PENDING' : null
+                }
+
+                console.log('>  user has no pending or denied request')
+
+                await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+                    console.log('>  become seller request updated on db')
+                    res.status(200).send(<CustomResponse>{error: false, message: 'become seller request updated', code: 200});
+                })
+            } else {
+                console.log('>  user has already a pending or denied request')
+                throw <CustomResponse> {error: true, message: 'user has already a pending or denied request', code: 401}
+            }
+
+            console.log('aaaaaaaa: ', docs);
+
+            console.log('>  trying to find user on db')
+
+        }).catch(err => {
+            res.status(err.code).send(<CustomResponse>{error: true, message: err.message, code: 500});
         })
     }
 };

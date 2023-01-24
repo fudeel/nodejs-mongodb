@@ -9,7 +9,7 @@ export const getCurrentUserInfo = async (req: Request, res: Response) => {
             try {
                 if (req.headers['authorization']) {
                     const accessToken = req.headers['authorization'].slice(7);
-                    await User.find({accessToken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress address').exec((err, docs) => {
+                    await User.find({accessToken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
                         if (!err) {
                             res.status(200).send(docs);
                         } else {
@@ -28,11 +28,11 @@ export const getCurrentUserInfo = async (req: Request, res: Response) => {
             }
         } else {
             console.log('Error in generate user info: Authorization code not valid or undefined');
-            throw<CustomResponse> {
+            res.status(500).send({
                 error: true,
                 message: 'Authorization code invalid or missing',
                 code: 500
-            }
+            })
         }
     } catch (error: any) {
         res.status(error.status).send(error);
