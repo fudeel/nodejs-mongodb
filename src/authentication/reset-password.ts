@@ -59,7 +59,6 @@ export const ResetPassword = async (req: Request, res: Response) => {
     try {
         const { passwordResetToken, newPassword, confirmNewPassword } = req.body;
         if (!passwordResetToken || !newPassword || !confirmNewPassword) {
-            console.log('11111');
 
             return res.status(403).json(<CustomResponse>{
                 error: true,
@@ -73,7 +72,6 @@ export const ResetPassword = async (req: Request, res: Response) => {
             resetPasswordExpires: { $gt: Date.now() },
         });
         if (!user) {
-            console.log('2222');
             return res.send(<CustomResponse>{
                 error: true,
                 message: "Password reset token is invalid or has expired.",
@@ -81,7 +79,6 @@ export const ResetPassword = async (req: Request, res: Response) => {
             });
         }
         if (newPassword !== confirmNewPassword) {
-            console.log('3333');
             return res.status(400).json(<CustomResponse>{
                 error: true,
                 message: "Passwords didn't match",
@@ -89,20 +86,17 @@ export const ResetPassword = async (req: Request, res: Response) => {
             });
         }
 
-        console.log('444444');
         user.password = await hashPassword(req.body.newPassword);
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
 
         await user.save();
 
-        console.log('555555');
         return res.send({
             success: true,
             message: "Password has been changed",
         });
     } catch (error: any) {
-        console.log('666666');
         console.error("reset-password-error", error);
         return res.status(500).json({
             error: true,

@@ -23,7 +23,7 @@ const router = express.Router();
 
 router.post('/oauth-login', cleanBody, Login);
 router.post('/oauth-register', cleanBody, recaptchaVerification, Signup);
-router.get('/get-current-user-info', cleanBody, getCurrentUserInfo);
+router.get('/get-current-user-info', cleanBody, validateToken, getCurrentUserInfo);
 router.patch("/activate", cleanBody, Activate);
 router.patch("/recover", cleanBody, recover);
 router.patch("/reset", cleanBody, ResetPassword);

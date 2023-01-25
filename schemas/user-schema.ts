@@ -64,7 +64,7 @@ const userSchema = new Schema(
             }, default: null },
         emailTokenExpires: { type: Date, default: null },
 
-        accessToken: {type: mongoose.Schema.Types.Mixed,
+        accesstoken: {type: mongoose.Schema.Types.Mixed,
             required: false,
             validate: (value: string | null) => {
                 return value === null || true;

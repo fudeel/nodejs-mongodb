@@ -4,9 +4,6 @@ import {findUser} from "../../utils/find-user";
 import {CustomResponse} from "../../models/CustomResponse";
 
 export const checkUserActivation = async (req: any, res: Response) => {
-    console.log('>  Checking user activation...');
-    console.log('>  Checking mongodb token...: ', req.decoded);
-    console.log('>  Checking firebase token...', req.firebaseDecoded);
     if (req.headers['idtoken'] && req.headers['idtoken'] === typeof string) {
 
         const customResponse: CustomResponse = {

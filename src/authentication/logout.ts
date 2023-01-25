@@ -9,7 +9,7 @@ export const Logout = async (req: any, res: Response) => {
         const user = await User.findOne({ userId: id });
 
         if (user) {
-            user.accessToken = null;
+            user.accesstoken = null;
             await user.save();
             const customResponse: CustomResponse = {
                 error: false,

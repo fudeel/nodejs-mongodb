@@ -15,10 +15,8 @@ export const generateNewActivationCode = async (email: string): Promise<Activati
             code: null,
             expiry: null
         };
-        console.log(`Error in sendind the activation code to ${email}: `, error);
         return error;
     } else {
-        console.log(`email sent to: ${email} with the code: ${code}`);
         return {
             error: false,
             message: `Email sent successfully to ${email}`,

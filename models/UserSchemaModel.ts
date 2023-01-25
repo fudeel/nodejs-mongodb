@@ -2,7 +2,7 @@ import {SocialNetworkModel} from "./user/social-network-model";
 
 export interface UserSchemaModel {
     userId: string;
-    accessToken: string | null;
+    accesstoken: string | null;
     username: string;
     fullname: string;
     email: string;

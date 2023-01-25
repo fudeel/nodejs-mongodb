@@ -21,10 +21,7 @@ const userSchema = Joi.object().keys({
 });
 
 export const Signup = async (req: Request, res: Response, next: () => void) => {
-    console.log('>  Signup');
     try {
-
-        console.log('>  validating user schema');
         const result = await userSchema.validate(req.body);
         if (result.error) {
             const customResponse: CustomResponse = {
@@ -35,7 +32,6 @@ export const Signup = async (req: Request, res: Response, next: () => void) => {
             }
             return res.status(500).send(customResponse);
         } else {
-            console.log('>  checking if email already exists');
             await User.findOne({
                 email: result.value.email,
             }).then( async (user) => {
@@ -47,7 +43,6 @@ export const Signup = async (req: Request, res: Response, next: () => void) => {
                         forceLogout: false
                     }
                 } else {
-                    console.log('>  checking if username already exists')
                     await User.findOne({
                         username: result.value.username,
                     }).then(async (user) => {
@@ -59,7 +54,6 @@ export const Signup = async (req: Request, res: Response, next: () => void) => {
                                 forceLogout: false
                             }
                         } else {
-                            console.log('>  hashing the password')
                             const hash = await hashPassword(result.value.password);
 
 
@@ -69,7 +63,6 @@ export const Signup = async (req: Request, res: Response, next: () => void) => {
                             delete result.value.confirmPassword;
                             result.value.password = hash;
 
-                            console.log('>  generating activation code')
                             const activateEmail = await generateNewActivationCode(result.value.email);
 
                             result.value.emailToken = activateEmail.code;
@@ -96,13 +89,12 @@ export const Signup = async (req: Request, res: Response, next: () => void) => {
                                 console.log('X  error on saving user on DB: ', err);
                             });
 
-                            console.log('>  No errors.')
                             res.status(200).send(<CustomResponse>{
                                 error: false,
                                 success: true,
                                 message: 'User registered successfully',
                                 status: 200,
-                                accessToken: newUser.accessToken
+                                accesstoken: newUser.accesstoken
                             })
                         }
                     });

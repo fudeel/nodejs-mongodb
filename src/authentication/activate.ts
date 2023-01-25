@@ -3,7 +3,6 @@ import {User} from "../../schemas/user-schema";
 import {CustomResponse} from "../../models/CustomResponse";
 
 export const Activate = async (req: Request, res: Response) => {
-    console.log('>  Activating user with email: ', req.body['email']);
     try {
         const { email, code } = req.body;
         if (!email || !code) {
@@ -21,7 +20,6 @@ export const Activate = async (req: Request, res: Response) => {
         });
 
         if (!user) {
-            console.log(`X  Activation error: user with email ${email} not found.`)
             const customResponse: CustomResponse = {
                 error: true,
                 message: "The code is not valid",
@@ -30,7 +28,6 @@ export const Activate = async (req: Request, res: Response) => {
             return res.status(400).send(customResponse);
         } else {
             if (user.active) {
-                console.log(`X  Activation error: user with email ${email} is already active`)
                 const customResponse: CustomResponse = {
                     error: true,
                     message: "Account already activated",
@@ -44,7 +41,6 @@ export const Activate = async (req: Request, res: Response) => {
 
                 await user.save();
 
-                console.log(`>  Activation success: user with email ${email} is now active`);
                 const customResponse: CustomResponse = {
                     success: true,
                     message: "Account activated.",

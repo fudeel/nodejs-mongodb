@@ -79,7 +79,6 @@ export const getEvents = async (req: Request, res: Response) => {
             if (!err) {
                 res.status(200).send(docs);
             } else {
-                console.log('POISTION ERROR: ', err);
                 res.status(500).send({error: true, message: err.message, code: 500});
             }
         });
@@ -119,7 +118,6 @@ export const getAllCreatorsByFilter = async (req: Request, res: Response) => {
             if (!err) {
                 res.status(200).send(docs);
             } else {
-                console.log('POISTION ERROR: ', err);
                 res.status(500).send({error: true, message: err.message, code: 500});
             }
         });

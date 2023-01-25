@@ -23,17 +23,15 @@ const uploadProfilePictureSchema = Joi.object().keys({
 });
 
 export const uploadProfilePicture= async (req: Request, res: Response) => {
-    console.log('>  updating profile picture: ', req.body);
-    if (req.headers['authorization'] !== null && req.headers['authorization'] !== '') {
+    if (req.headers['accesstoken'] !== null && req.headers['accesstoken'] !== '') {
         try {
-            if (req.headers['authorization']) {
-                const accessToken = req.headers['authorization'].slice(7);
-                await User.find({accessToken}).exec(async (err, docs) => {
+            if (req.headers['accesstoken']) {
+                const accesstoken = req.headers['accesstoken'].slice(7);
+                await User.find({accesstoken}).exec(async (err, docs) => {
                     if (!err) {
                         // POST validation
                         const result = await uploadProfilePictureSchema.validate({pic: req.body.picUrl, _id: docs[0].userId});
                         if (result.error) {
-                            console.log('Error in uploading user picture: ', err);
                             res.status(500).send(<CustomResponse>{
                                 error: true,
                                 message: 'The image is exceeding size limit. Maximum size is 2MB',
@@ -42,14 +40,10 @@ export const uploadProfilePicture= async (req: Request, res: Response) => {
                         } else {
                             const update = { pic: req.body.picUrl };
                             //const filter = { userId: docs[0].userId };
-                            console.log('ID BEFORE TRANSFORMING: ', docs[0]._id);
                             const _id = new mongoose.Types.ObjectId(docs[0]._id)
-                            console.log('>  trying to write on db')
                             await User.findByIdAndUpdate(_id, update).then(() => {
-                                console.log('>  profile picture updated on db')
                                 res.status(200).send({error: false, message: 'Profile picture updated', code: 200});
                             }).catch(err => {
-                                console.log('X  Error in updating profile picture on db: ', err);
                                 throw<CustomResponse> {
                                     error: true, message: err.message, code: 500
                                 }
@@ -64,7 +58,6 @@ export const uploadProfilePicture= async (req: Request, res: Response) => {
                 });
             }
         } catch (err: any) {
-            console.log('Error in uploading user picture: ', err);
             res.status(err.status).send(err);
         }
     }

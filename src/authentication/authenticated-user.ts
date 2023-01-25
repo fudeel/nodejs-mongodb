@@ -2,35 +2,50 @@ import {Request, Response} from "express";
 import {User} from "../../schemas/user-schema";
 import {CustomResponse} from "../../models/CustomResponse";
 
-export const getCurrentUserInfo = async (req: Request, res: Response) => {
-    console.log('>  getting current user information');
+export const getCurrentUserInfo = async (req: any, res: Response) => {
+    console.log('> getting user info')
     try {
-        if (req.headers['authorization'] !== null && req.headers['authorization'] !== '') {
+        console.log('> veriftying token in header')
+        if (req.headers['accesstoken'] !== null && req.headers['accesstoken'] !== '') {
+            console.log('> token is in header')
             try {
-                if (req.headers['authorization']) {
-                    const accessToken = req.headers['authorization'].slice(7);
-                    await User.find({accessToken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
-                        if (!err) {
-                            res.status(200).send(docs);
-                        } else {
-                            throw<CustomResponse>{
+                console.log('> saving token');
+                const accesstoken: string = req.headers['accesstoken'].split(" ")[1];
+
+                console.log('> taking user data with token: ', accesstoken);
+
+                await User.find({accesstoken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
+
+                    if (!err) {
+
+                        if (docs.length === 0) {
+                            res.status(401).send({
                                 error: true,
-                                message: "Account already activated",
-                                status: 500,
-                            }
+                                message: 'Session expired or there is another error with your account',
+                                status: 401,
+                                forceLogout: true
+                            });
+                        } else {
+                            res.status(200).send(docs[0]);
                         }
-                    });
-                }
+
+                    } else if (err){
+                        throw<CustomResponse>{
+                            error: true,
+                            message: "Account already activated",
+                            status: 500,
+                        }
+                    }
+                });
 
             } catch (error: any) {
-                console.log('ERROR in generate user info: ', error);
                 res.status(error.status).send(error);
             }
         } else {
-            console.log('Error in generate user info: Authorization code not valid or undefined');
+            console.log('X token is not in header')
             res.status(500).send({
                 error: true,
-                message: 'Authorization code invalid or missing',
+                message: 'accesstoken code invalid or missing',
                 code: 500
             })
         }

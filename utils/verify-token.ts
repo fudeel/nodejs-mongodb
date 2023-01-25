@@ -6,7 +6,6 @@ export const verifyIdToken = async (req: Request, res: Response, next: () => voi
 
     return await admin.auth().verifyIdToken(<string>idToken)
         .then(async (decodedToken) => {
-            await console.log({'Decoded token': decodedToken});
             res.status(200).send(true)
             next();
         })

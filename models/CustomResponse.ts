@@ -4,7 +4,7 @@ export interface CustomResponse {
     status?: number,
     message?: string,
     forceLogout?: boolean,
-    accessToken?: string,
+    accesstoken?: string,
     idToken?: string,
     referralCode?: string,
     user?: any

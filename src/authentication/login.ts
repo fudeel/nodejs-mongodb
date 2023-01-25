@@ -5,10 +5,6 @@ import {generateJwt} from "../../utils/generateJwt";
 import {CustomResponse} from "../../models/CustomResponse";
 
 export const Login = async (req: any, res: Response) => {
-    console.table({
-        email: req.body.email,
-        password: req.body.password
-    })
     try {
         const { email, password } = req.body;
 
@@ -52,7 +48,7 @@ export const Login = async (req: any, res: Response) => {
             }
             return res.status(500).send(customResponse);
         }
-        user.accessToken = token;
+        user.accesstoken = token;
         await user.save();
 
         //Success
@@ -62,9 +58,10 @@ export const Login = async (req: any, res: Response) => {
             status: 200,
             forceLogout: false,
             success: true,
-            accessToken: token,
+            accesstoken: token,
             idToken: req.body.idToken
         }
+        console.log(`user: ${email} successfully logged in`);
         return res.status(200).send(customResponse);
     } catch (err) {
         console.error("Login error try-catch", err);
