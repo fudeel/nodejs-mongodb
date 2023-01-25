@@ -41,10 +41,15 @@ const updateBecomeSellerRequestSchema = Joi.object().keys({
 
 
 export const UpdateBasicInfo = async (req: any, res: Response) => {
+
+    console.log('> updating user data')
     req.body._id = req.decoded.id;
+
     const result = await updateBasicInfoSchema.validate(req.body);
 
+    console.log('> checking errors')
     if (result.error) {
+        console.log('x error')
         const customResponse: CustomResponse = {
             error: true,
             message: result.error.message.toString(),
@@ -54,7 +59,9 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
         return res.status(500).send(customResponse);
     } else {
 
+        console.log('> no errors')
         if (!req.user.basicInfoAvailableToChange) {
+            console.log('> user already requested')
             const customResponse: CustomResponse = {
                 error: true,
                 forceLogout: true,
@@ -63,17 +70,14 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
             }
             return res.status(customResponse.status).send(customResponse);
         }
-
-        const accesstoken = req.headers.accesstoken.split(" ")[1];
         const _id = new mongoose.Types.ObjectId(req.user._id)
         const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone, basicInfoAvailableToChange: false };
 
         await User.findByIdAndUpdate(_id, update).then(() => {
             res.status(200).send(<CustomResponse>{error: false, message: 'basic info updated', code: 200});
         }).catch(err => {
-            throw<CustomResponse>{
-                error: true, message: err.message, code: 500
-            }
+            console.log('x error in updating user data')
+            res.status(500).send(<CustomResponse>{error: true, message: err.message, code: 500});
         });
     }
 };
