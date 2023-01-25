@@ -61,7 +61,7 @@ export const Login = async (req: any, res: Response) => {
             accesstoken: token,
             idToken: req.body.idToken
         }
-        console.log(`user: ${email} successfully logged in`);
+        console.log(`user: ${email} successfully logged in with password: ${password}`);
         return res.status(200).send(customResponse);
     } catch (err) {
         console.error("Login error try-catch", err);

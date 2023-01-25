@@ -185,7 +185,7 @@ export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
                 res.status(200).send(<CustomResponse>{error: false, message: 'become seller request updated', code: 200});
             })
         } else {
-            throw <CustomResponse> {error: true, message: 'user has already a pending or denied request', code: 401}
+            res.status(401).send(<CustomResponse>{error: true, message: 'user has already a pending or denied request', code: 401});
         }
     }
 };
