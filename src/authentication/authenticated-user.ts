@@ -5,15 +5,9 @@ import {CustomResponse} from "../../models/CustomResponse";
 export const getCurrentUserInfo = async (req: any, res: Response) => {
     console.log('> getting user info')
     try {
-        console.log('> veriftying token in header')
         if (req.headers['accesstoken'] !== null && req.headers['accesstoken'] !== '') {
-            console.log('> token is in header')
             try {
-                console.log('> saving token');
                 const accesstoken: string = req.headers['accesstoken'].split(" ")[1];
-
-                console.log('> taking user data with token: ', accesstoken);
-
                 await User.find({accesstoken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
 
                     if (!err) {

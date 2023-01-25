@@ -1,5 +1,5 @@
-import Joi, {string} from "joi";
-import {Request, Response} from "express";
+import Joi from "joi";
+import {Response} from "express";
 import {CustomResponse} from "../../models/CustomResponse";
 import mongoose from "mongoose";
 import {User} from "../../schemas/user-schema";
@@ -41,15 +41,10 @@ const updateBecomeSellerRequestSchema = Joi.object().keys({
 
 
 export const UpdateBasicInfo = async (req: any, res: Response) => {
-
-    console.log('> updating user info')
     req.body._id = req.decoded.id;
-
-    console.log('> _id: ', req.body._id);
     const result = await updateBasicInfoSchema.validate(req.body);
 
     if (result.error) {
-        console.log('x error in validating schema')
         const customResponse: CustomResponse = {
             error: true,
             message: result.error.message.toString(),
@@ -70,15 +65,9 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
         }
 
         const accesstoken = req.headers.accesstoken.split(" ")[1];
-        console.log('> access token:', accesstoken);
-
-        console.log('> generating _id')
         const _id = new mongoose.Types.ObjectId(req.user._id)
-
-        console.log('> creating update model')
         const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone, basicInfoAvailableToChange: false };
 
-        console.log('> performing changes')
         await User.findByIdAndUpdate(_id, update).then(() => {
             res.status(200).send(<CustomResponse>{error: false, message: 'basic info updated', code: 200});
         }).catch(err => {
