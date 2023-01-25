@@ -1,4 +1,5 @@
 import express from 'express';
+const https = require('https')
 import mongoose, {connect, ConnectOptions, set} from "mongoose";
 import bodyParser from "body-parser";
 import cors from 'cors';
@@ -9,8 +10,15 @@ import imagesRoutes from "./routes/imagesRoutes";
 import {authenticationURL, BASE_URL, userURL} from "./utils/constants";
 import userRoutes from "./routes/userRoutes";
 import securityRoutes from "./routes/securityRoutes";
+import * as fs from "fs";
 
 const PORT = process.env.PORT || 8000;
+
+
+const httpsOptions = {
+    key: fs.readFileSync('./key.pem'),
+    cert: fs.readFileSync('./cert.pem')
+}
 
 async function run() {
     /**
@@ -54,9 +62,13 @@ app.use( BASE_URL + "/images", imagesRoutes);
 * protected route: app.use( BASE_URL + "/protected-route", protectedRoutes, verifyIdToken);
 * */
 
-app.listen(PORT, () => {
+/*app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
-});
+});*/
+
+https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log('server running at ' + PORT)
+})
 
 
 export default app;
