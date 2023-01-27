@@ -21,7 +21,7 @@ import {recaptchaVerification} from "../middlewares/recaptcha-verification";
 
 const router = express.Router();
 
-router.post('/oauth-login', cleanBody, Login);
+router.post('/oauth-login', cleanBody, recaptchaVerification, Login);
 router.post('/oauth-register', cleanBody, recaptchaVerification, Signup);
 router.get('/get-current-user-info', cleanBody, validateToken, getCurrentUserInfo);
 router.patch("/activate", cleanBody, Activate);
