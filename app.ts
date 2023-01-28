@@ -21,15 +21,11 @@ async function run() {
     await connect(process.env.MONGODB_URI);
 }
 
-run().then(() => {
-    console.log('Connection to DB success');
-}).catch(err => {
-    console.log('Error during DB connection: ', err);
-})
-
 const app = express();
 
 app.use(cors())
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -53,6 +49,12 @@ app.use( BASE_URL + "/images", imagesRoutes);
 
 app.listen(PORT, () => {
     console.log("Server started listening on PORT : " + PORT);
+
+    run().then(() => {
+        console.log('Connection to DB success');
+    }).catch(err => {
+        console.log('Error during DB connection: ', err);
+    })
 });
 
 
