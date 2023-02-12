@@ -6,7 +6,6 @@ import {CustomResponse} from "../models/CustomResponse";
 
 export async function validateToken(req: any, res: Response, next: () => void) {
     console.log('> Validating Token')
-    console.log('> Incoming accesstoken: ', req.headers.accesstoken)
     const accesstoken = req.headers.accesstoken;
 
     let result: any;

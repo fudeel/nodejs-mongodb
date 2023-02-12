@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcrypt';
 import {UpdateShippingAddressInfoModel} from "../models/user/update-shipping-address-info-model";
-import {SocialNetworkModel} from "../models/user/social-network-model";
+import {socialMediaSchema} from "./social-media-schema";
 
 
 const Schema = mongoose.Schema;
+
+const SocialMedia = mongoose.model("SocialMedia", socialMediaSchema);
 
 
 const userSchema = new Schema(
@@ -39,11 +41,38 @@ const userSchema = new Schema(
             }, default: null
         },
         socialNetwork: {
-            type: mongoose.Schema.Types.Mixed,
-            required: false,
-            validate: (value: SocialNetworkModel | null) => {
-                return value === null || true;
-            }, default: null
+            instagram: {
+                profile: { type: String, default: null },
+                status: {
+                    type: String,
+                    enum: ["PENDING", "VERIFIED", "DENIED", null],
+                    default: null
+                }
+            },
+            tiktok: {
+                profile: { type: String, default: null },
+                status: {
+                    type: String,
+                    enum: ["PENDING", "VERIFIED", "DENIED", null],
+                    default: null
+                }
+            },
+            twitch: {
+                profile: { type: String, default: null },
+                status: {
+                    type: String,
+                    enum: ["PENDING", "VERIFIED", "DENIED", null],
+                    default: null
+                }
+            },
+            twitter: {
+                profile: { type: String, default: null },
+                status: {
+                    type: String,
+                    enum: ["PENDING", "VERIFIED", "DENIED", null],
+                    default: null
+                }
+            }
         },
         becomeSellerRequest: { type: String, default: null },
         firstname: { type: String, default: null },

@@ -23,13 +23,8 @@ const shippingInfoSchema = Joi.object().keys({
 });
 
 const updateSocialNetworkSchema = Joi.object().keys({
-    form: Joi.object().keys({
-        instagram: Joi.string().optional().allow(''),
-        tiktok: Joi.string().optional().allow(''),
-        twitch: Joi.string().optional().allow(''),
-        twitter: Joi.string().optional().allow('')
-    }),
-    isAskingBecomeSeller: Joi.boolean().required().default(false),
+    selectedSocial: Joi.string().required(),
+    socialProfile: Joi.string().required(),
     _id: Joi.string().required()
 });
 
@@ -127,40 +122,58 @@ export const UpdateShippingAddressInfo = async (req: any, res: Response) => {
 };
 
 export const UpdateSocialNetwork = async (req: any, res: Response) => {
-    req.body._id = req.decoded.id;
-    const result = await updateSocialNetworkSchema.validate(req.body);
 
-    if (result.error) {
-        throw<CustomResponse>{
-            error: true,
-            message: result.error.message.toString(),
-            status: 500,
-            forceLogout: true
-        }
-    } else {
-        const _id = new mongoose.Types.ObjectId(req.user._id)
+    try {
+        req.body._id = req.decoded.id;
+        const result = await updateSocialNetworkSchema.validate(req.body);
 
-        const update = {
-            socialNetwork: <SocialNetworkModel>{
-                instagram: req.body.form.instagram,
-                tiktok: req.body.form.tiktok,
-                twitch: req.body.form.twitch,
-                twitter: req.body.form.twitter,
-            },
-        };
-
-
-        await User.findByIdAndUpdate(_id, update).then(() => {
-            res.status(200).send(<CustomResponse>{error: false, message: 'social network updated', code: 200});
-        }).catch(err => {
-            const customResponse: CustomResponse = {
+        if (result.error) {
+            throw<CustomResponse>{
                 error: true,
-                forceLogout: true,
-                message: err.message,
-                status: 500
+                message: result.error.message.toString(),
+                status: 500,
+                forceLogout: true
             }
-            return res.status(customResponse.status).send(customResponse);
-        });
+        } else {
+            const _id = new mongoose.Types.ObjectId(req.user._id)
+            const selectedSocial = req.body.selectedSocial
+
+            const update = {
+                socialNetwork: <SocialNetworkModel>{
+                    instagram: {
+                        profile: updateProfile(selectedSocial, 'instagram', req.user.socialNetwork.instagram, req.body.socialProfile).profile,
+                        status: updateProfile(selectedSocial, 'instagram', req.user.socialNetwork.instagram, req.body.socialProfile).status
+                    },
+                    tiktok: {
+                        profile: updateProfile(selectedSocial, 'tiktok', req.user.socialNetwork.tiktok, req.body.socialProfile).profile,
+                        status: updateProfile(selectedSocial, 'tiktok', req.user.socialNetwork.tiktok, req.body.socialProfile).status
+                    },
+                    twitch: {
+                        profile: updateProfile(selectedSocial, 'twitch', req.user.socialNetwork.twitch, req.body.socialProfile).profile,
+                        status: updateProfile(selectedSocial, 'twitch', req.user.socialNetwork.twitch, req.body.socialProfile).status
+                    },
+                    twitter: {
+                        profile: updateProfile(selectedSocial, 'twitter', req.user.socialNetwork.twitter, req.body.socialProfile).profile,
+                        status: updateProfile(selectedSocial, 'twitter', req.user.socialNetwork.twitter, req.body.socialProfile).status
+                    },
+                }
+            };
+
+
+            await User.findByIdAndUpdate(_id, update).then(() => {
+                res.status(200).send(<CustomResponse>{error: false, message: 'social network updated', code: 200});
+            }).catch(err => {
+                const customResponse: CustomResponse = {
+                    error: true,
+                    forceLogout: true,
+                    message: err.message,
+                    status: 500
+                }
+                return res.status(customResponse.status).send(customResponse);
+            });
+        }
+    } catch (error) {
+        return res.status(400).send(error.message);
     }
 };
 
@@ -193,3 +206,41 @@ export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
         }
     }
 };
+
+
+function updateProfile(selectedSocial: string, socialToChange: string, current: any, newSocial: string): {profile: string, status: 'PENDING' | 'VERIFIED' | 'DENIED' | null} {
+    if (selectedSocial !== socialToChange) {
+        // work around
+        return {
+            profile: current.profile,
+            status: current.status
+        }
+    }
+
+    if ((current.profile === null || current.profile === '') && (current.status === null || current.status === '')) {
+        return {
+            profile: newSocial,
+            status: 'PENDING'
+        }
+    } else if (current['profile'] !== newSocial && current['status'] === 'VERIFIED') {
+        return {
+            profile: newSocial,
+            status: 'PENDING'
+        }
+    } else if (current['profile'] === newSocial) {
+        return {
+            profile: current['profile'],
+            status: current['status']
+        }
+    } else if (current['profile'] !== newSocial && current['status'] !== null) {
+        return {
+            profile: current['profile'],
+            status: current['status']
+        }
+    } else {
+        return {
+            profile: null,
+            status: null
+        }
+    }
+}
