@@ -23,8 +23,8 @@ const shippingInfoSchema = Joi.object().keys({
 });
 
 const updateSocialNetworkSchema = Joi.object().keys({
-    selectedSocial: Joi.string().required(),
-    socialProfile: Joi.string().required(),
+    selectedSocial: Joi.string().min(5).required(),
+    socialProfile: Joi.string().min(5).required(),
     _id: Joi.string().required()
 });
 
