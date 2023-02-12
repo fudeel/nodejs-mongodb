@@ -23,6 +23,7 @@ const uploadProfilePictureSchema = Joi.object().keys({
 });
 
 export const uploadProfilePicture= async (req: Request, res: Response) => {
+    console.log('>  updating profile picture')
     if (req.headers['accesstoken'] !== null && req.headers['accesstoken'] !== '') {
         try {
             if (req.headers['accesstoken']) {
@@ -38,6 +39,7 @@ export const uploadProfilePicture= async (req: Request, res: Response) => {
                                 status: 500
                             });
                         } else {
+                            console.log('>  taking new profile picture url: ', req.body.picUrl)
                             const update = { pic: req.body.picUrl };
                             //const filter = { userId: docs[0].userId };
                             const _id = new mongoose.Types.ObjectId(docs[0]._id)
@@ -51,6 +53,7 @@ export const uploadProfilePicture= async (req: Request, res: Response) => {
                         }
 
                     } else {
+                        console.log('X  error in updating profile picture')
                         throw<CustomResponse> {
                             error: true, message: err.message, code: 500
                         }

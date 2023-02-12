@@ -20,6 +20,7 @@ export const getCurrentUserInfo = async (req: any, res: Response) => {
                                 forceLogout: true
                             });
                         } else {
+                            console.log('> user info downloaded successfully')
                             res.status(200).send(docs[0]);
                         }
 
