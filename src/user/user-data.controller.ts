@@ -237,7 +237,8 @@ function updateProfile(selectedSocial: string, socialToChange: string, current: 
             profile: current['profile'],
             status: current['status']
         }
-    } else {
+    }
+    else {
         return {
             profile: null,
             status: null
