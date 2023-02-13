@@ -32,8 +32,9 @@ const shippingInfoSchema = joi_1.default.object().keys({
     _id: joi_1.default.string().required()
 });
 const updateSocialNetworkSchema = joi_1.default.object().keys({
-    selectedSocial: joi_1.default.string().required(),
-    socialProfile: joi_1.default.string().required(),
+    isDelete: joi_1.default.bool().default(false).required(),
+    selectedSocial: joi_1.default.string().min(5).required(),
+    socialProfile: joi_1.default.string().allow(null).min(5),
     _id: joi_1.default.string().required()
 });
 const updateBecomeSellerRequestSchema = joi_1.default.object().keys({
@@ -134,20 +135,20 @@ const UpdateSocialNetwork = (req, res) => __awaiter(void 0, void 0, void 0, func
             const update = {
                 socialNetwork: {
                     instagram: {
-                        profile: updateProfile(selectedSocial, 'instagram', req.user.socialNetwork.instagram, req.body.socialProfile).profile,
-                        status: updateProfile(selectedSocial, 'instagram', req.user.socialNetwork.instagram, req.body.socialProfile).status
+                        profile: updateProfile(req.body.isDelete, selectedSocial, 'instagram', req.user.socialNetwork.instagram, req.body.socialProfile).profile,
+                        status: updateProfile(req.body.isDelete, selectedSocial, 'instagram', req.user.socialNetwork.instagram, req.body.socialProfile).status
                     },
                     tiktok: {
-                        profile: updateProfile(selectedSocial, 'tiktok', req.user.socialNetwork.tiktok, req.body.socialProfile).profile,
-                        status: updateProfile(selectedSocial, 'tiktok', req.user.socialNetwork.tiktok, req.body.socialProfile).status
+                        profile: updateProfile(req.body.isDelete, selectedSocial, 'tiktok', req.user.socialNetwork.tiktok, req.body.socialProfile).profile,
+                        status: updateProfile(req.body.isDelete, selectedSocial, 'tiktok', req.user.socialNetwork.tiktok, req.body.socialProfile).status
                     },
                     twitch: {
-                        profile: updateProfile(selectedSocial, 'twitch', req.user.socialNetwork.twitch, req.body.socialProfile).profile,
-                        status: updateProfile(selectedSocial, 'twitch', req.user.socialNetwork.twitch, req.body.socialProfile).status
+                        profile: updateProfile(req.body.isDelete, selectedSocial, 'twitch', req.user.socialNetwork.twitch, req.body.socialProfile).profile,
+                        status: updateProfile(req.body.isDelete, selectedSocial, 'twitch', req.user.socialNetwork.twitch, req.body.socialProfile).status
                     },
                     twitter: {
-                        profile: updateProfile(selectedSocial, 'twitter', req.user.socialNetwork.twitter, req.body.socialProfile).profile,
-                        status: updateProfile(selectedSocial, 'twitter', req.user.socialNetwork.twitter, req.body.socialProfile).status
+                        profile: updateProfile(req.body.isDelete, selectedSocial, 'twitter', req.user.socialNetwork.twitter, req.body.socialProfile).profile,
+                        status: updateProfile(req.body.isDelete, selectedSocial, 'twitter', req.user.socialNetwork.twitter, req.body.socialProfile).status
                     },
                 }
             };
@@ -196,12 +197,18 @@ const UpdateBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.UpdateBecomeSellerRequest = UpdateBecomeSellerRequest;
-function updateProfile(selectedSocial, socialToChange, current, newSocial) {
+function updateProfile(isDelete, selectedSocial, socialToChange, current, newSocial) {
     if (selectedSocial !== socialToChange) {
         // work around
         return {
             profile: current.profile,
             status: current.status
+        };
+    }
+    if (isDelete) {
+        return {
+            profile: null,
+            status: null
         };
     }
     if ((current.profile === null || current.profile === '') && (current.status === null || current.status === '')) {
