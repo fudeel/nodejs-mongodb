@@ -1,5 +1,6 @@
 import Joi from "joi";
 import {Event} from "../../schemas/event-schema";
+import {BecomeSellerSchema} from "../../schemas/become-seller-schema";
 import {User} from "../../schemas/user-schema";
 import {Request, Response} from "express";
 

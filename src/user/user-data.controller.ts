@@ -4,6 +4,8 @@ import {CustomResponse} from "../../models/CustomResponse";
 import mongoose from "mongoose";
 import {User} from "../../schemas/user-schema";
 import {SocialNetworkModel} from "../../models/user/social-network-model";
+import {BecomeSellerModel} from "../../models/user/become-seller-model";
+import {BecomeSellerSchema} from "../../schemas/become-seller-schema";
 
 const updateBasicInfoSchema = Joi.object().keys({
     firstname: Joi.string().required(),
@@ -30,8 +32,28 @@ const updateSocialNetworkSchema = Joi.object().keys({
 });
 
 const updateBecomeSellerRequestSchema = Joi.object().keys({
-    isAskingBecomeSeller: Joi.boolean().required().default(false),
-    _id: Joi.string().required()
+    addressInfo: Joi.object({
+        city: Joi.string().required(),
+        country: Joi.string().required(),
+        state: Joi.string().required(),
+        streetOne: Joi.string().required(),
+        streetTwo: Joi.string().allow(''),
+        zip: Joi.string().required()
+    }).required(),
+
+    basicInfo: Joi.object({
+        firstname: Joi.string().required(),
+        lastname: Joi.string().required(),
+        phone: Joi.string().allow(''),
+    }).required(),
+    email: Joi.string().required(),
+    validSocialNetworks: Joi.array().items(
+        Joi.object({
+            profile: Joi.string().required(),
+            social: Joi.string().required(),
+            status: Joi.string().required()
+        })),
+    requesterId: Joi.string().required()
 });
 
 
@@ -181,31 +203,63 @@ export const UpdateSocialNetwork = async (req: any, res: Response) => {
 
 export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
 
-    req.body._id = req.decoded.id;
-    const result = await updateBecomeSellerRequestSchema.validate(req.body);
+    try {
+        req.body._id = req.decoded.id;
+        console.log('user request: ', req.body.becomeSellerRequest);
 
-    if (result.error) {
-        throw<CustomResponse>{
-            error: true,
-            message: result.error.message.toString(),
-            status: 500,
-            forceLogout: true
+        const becomeSellerRequest: BecomeSellerModel = {
+            addressInfo: req.body.becomeSellerRequest.addressInfo,
+            basicInfo: req.body.becomeSellerRequest.basicInfo,
+            validSocialNetworks: req.body.becomeSellerRequest.validSocialNetworks,
+            email: req.user.email,
+            requesterId: req.body._id
         }
-    } else {
-        const _id = new mongoose.Types.ObjectId(req.user._id)
 
-        if (req.user.becomeSellerRequest !== 'PENDING' && req.user.becomeSellerRequest !== 'DENIED' ) {
-            const updateBecomeSellerRequest = {
-                becomeSellerRequest: req.body.isAskingBecomeSeller ? 'PENDING' : null
+        console.log('become seller request: ', becomeSellerRequest);
+
+        const result = await updateBecomeSellerRequestSchema.validate(becomeSellerRequest);
+
+        if (result.error) {
+            throw<CustomResponse>{
+                error: true,
+                message: result.error.message.toString(),
+                status: 500,
+                forceLogout: true
             }
-
-            await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
-                res.status(200).send(<CustomResponse>{error: false, message: 'become seller request updated', code: 200});
-            })
         } else {
-            res.status(401).send(<CustomResponse>{error: true, message: 'user has already a pending or denied request', code: 401});
+            const _id = new mongoose.Types.ObjectId(req.user._id)
+
+            if (req.user.becomeSellerRequest !== 'PENDING' && req.user.becomeSellerRequest !== 'DENIED' ) {
+                const updateBecomeSellerRequest = {
+                    becomeSellerRequest: 'PENDING'
+                }
+
+                await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+                    res.status(200).send(<CustomResponse>{error: false, message: 'become seller request updated', code: 200});
+                })
+
+                const newBecomeSellerRequest = await new BecomeSellerSchema(result.value)
+                newBecomeSellerRequest.save().then(() => {
+                    console.log('>  new become seller request created on DB');
+                }).catch(err => {
+                    console.log('X  Error in creating new become seller request on DB');
+                    throw<CustomResponse>{
+                        error: true,
+                        message: err.message,
+                        status: 500,
+                        forceLogout: true
+                    }
+                })
+            } else {
+                res.status(401).send(<CustomResponse>{error: true, message: 'user has already a pending or denied request', code: 401});
+            }
         }
+    } catch (error) {
+        console.log('error: ', error);
+        res.status(error.status).send(error);
     }
+
+
 };
 
 
