@@ -8,6 +8,7 @@
 import express from "express";
 import {cleanBody} from "../middlewares/cleanbody";
 import {
+    DeleteBecomeSellerRequest,
     UpdateBasicInfo,
     UpdateBecomeSellerRequest,
     UpdateShippingAddressInfo,
@@ -21,5 +22,6 @@ router.patch('/update-basic-info', cleanBody, validateToken, UpdateBasicInfo);
 router.patch('/update-shipping-address-info', cleanBody, validateToken, UpdateShippingAddressInfo);
 router.patch('/update-social-network', cleanBody, validateToken, UpdateSocialNetwork);
 router.patch('/update-become-seller-request', cleanBody, validateToken, UpdateBecomeSellerRequest);
+router.get('/delete-become-seller-request', cleanBody, validateToken, DeleteBecomeSellerRequest);
 
 export default router;
