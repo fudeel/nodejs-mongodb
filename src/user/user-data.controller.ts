@@ -258,35 +258,38 @@ export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
 };
 
 
-export const DeleteBecomeSellerRequest = async (req: any, res: Response) => {
+export const DeleteBecomeSellerRequest = (req: any, res: Response) => {
     console.log('deleting request: ', req.decoded.id);
     const requesterId = req.decoded.id;
     if (req.user.becomeSellerRequest === 'PENDING') {
 
-        await BecomeSellerSchema.findOneAndDelete({requesterId: requesterId},  (err, docs) => {
+        BecomeSellerSchema.findOneAndDelete({requesterId: requesterId}, async (err, docs) => {
             if (err){
                 console.log("find one and delete error", err);
-                throw <CustomResponse>{
+                res.status(404).send(<CustomResponse>{
                     error: true,
                     message: 'No pending become a seller request',
                     status: 404
-                }
+                })
             }
-        })
+            else{
+                console.log("> deleting become a seller request");
 
-        const _id = new mongoose.Types.ObjectId(req.user._id);
+                const _id = new mongoose.Types.ObjectId(req.user._id);
 
-        const updateBecomeSellerRequest = {
-            becomeSellerRequest: null
-        }
+                const updateBecomeSellerRequest = {
+                    becomeSellerRequest: null
+                }
 
-        await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
-            console.log('> become a seller request deleted successfully')
-            res.status(200).send(<CustomResponse>{
-                error: false,
-                message: 'become seller request updated',
-                code: 200
-            });
+                await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+                    console.log('> become a seller request deleted successfully')
+                    res.status(200).send(<CustomResponse>{
+                        error: false,
+                        message: 'become seller request updated',
+                        code: 200
+                    });
+                })
+            }
         })
     } else {
         res.status(404).send(<CustomResponse>{
