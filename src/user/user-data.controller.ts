@@ -263,32 +263,30 @@ export const DeleteBecomeSellerRequest = async (req: any, res: Response) => {
     const requesterId = req.decoded.id;
     if (req.user.becomeSellerRequest === 'PENDING') {
 
-        await BecomeSellerSchema.findOneAndDelete({requesterId: requesterId}, async (err, docs) => {
+        await BecomeSellerSchema.findOneAndDelete({requesterId: requesterId},  (err, docs) => {
             if (err){
                 console.log("find one and delete error", err);
-                res.status(404).send(<CustomResponse>{
+                throw <CustomResponse>{
                     error: true,
                     message: 'No pending become a seller request',
                     status: 404
-                })
-            }
-            else{
-                console.log("Deleted : ", docs);
-
-                const _id = new mongoose.Types.ObjectId(req.user._id);
-
-                const updateBecomeSellerRequest = {
-                    becomeSellerRequest: null
                 }
-
-                await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
-                    res.status(200).send(<CustomResponse>{
-                        error: false,
-                        message: 'become seller request updated',
-                        code: 200
-                    });
-                })
             }
+        })
+
+        const _id = new mongoose.Types.ObjectId(req.user._id);
+
+        const updateBecomeSellerRequest = {
+            becomeSellerRequest: null
+        }
+
+        await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+            console.log('> become a seller request deleted successfully')
+            res.status(200).send(<CustomResponse>{
+                error: false,
+                message: 'become seller request updated',
+                code: 200
+            });
         })
     } else {
         res.status(404).send(<CustomResponse>{
