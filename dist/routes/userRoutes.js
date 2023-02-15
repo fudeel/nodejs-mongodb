@@ -17,7 +17,7 @@ const router = express_1.default.Router();
 router.patch('/update-basic-info', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateBasicInfo);
 router.patch('/update-shipping-address-info', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateShippingAddressInfo);
 router.patch('/update-social-network', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateSocialNetwork);
-router.patch('/update-become-seller-request', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateBecomeSellerRequest);
-router.get('/delete-become-seller-request', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.DeleteBecomeSellerRequest);
+router.get('/update-become-seller-request', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateBecomeSellerRequest);
+router.get('/delete-become-seller-request', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.DeleteBecomeSellerRequest, user_data_controller_1.UpdateBecomeSellerRequest);
 exports.default = router;
 //# sourceMappingURL=userRoutes.js.map
