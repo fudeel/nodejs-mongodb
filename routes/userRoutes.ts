@@ -22,6 +22,6 @@ router.patch('/update-basic-info', cleanBody, validateToken, UpdateBasicInfo);
 router.patch('/update-shipping-address-info', cleanBody, validateToken, UpdateShippingAddressInfo);
 router.patch('/update-social-network', cleanBody, validateToken, UpdateSocialNetwork);
 router.get('/update-become-seller-request', cleanBody, validateToken, UpdateBecomeSellerRequest);
-router.get('/delete-become-seller-request', cleanBody, validateToken, DeleteBecomeSellerRequest);
+router.get('/delete-become-seller-request', cleanBody, validateToken, DeleteBecomeSellerRequest, UpdateBecomeSellerRequest);
 
 export default router;
