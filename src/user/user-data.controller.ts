@@ -4,7 +4,6 @@ import {CustomResponse} from "../../models/CustomResponse";
 import mongoose from "mongoose";
 import {User} from "../../schemas/user-schema";
 import {SocialNetworkModel} from "../../models/user/social-network-model";
-import {BecomeSellerModel} from "../../models/user/become-seller-model";
 import {BecomeSellerSchema} from "../../schemas/become-seller-schema";
 
 const updateBasicInfoSchema = Joi.object().keys({
@@ -32,27 +31,6 @@ const updateSocialNetworkSchema = Joi.object().keys({
 });
 
 const updateBecomeSellerRequestSchema = Joi.object().keys({
-    addressInfo: Joi.object({
-        city: Joi.string().required(),
-        country: Joi.string().required(),
-        state: Joi.string().required(),
-        streetOne: Joi.string().required(),
-        streetTwo: Joi.string().allow('').allow(null),
-        zip: Joi.string().required()
-    }).required(),
-
-    basicInfo: Joi.object({
-        firstname: Joi.string().required(),
-        lastname: Joi.string().required(),
-        phone: Joi.string().allow(''),
-    }).required(),
-    email: Joi.string().required(),
-    validSocialNetworks: Joi.array().items(
-        Joi.object({
-            profile: Joi.string().required(),
-            social: Joi.string().required(),
-            status: Joi.string().required()
-        })),
     requesterId: Joi.string().required()
 });
 
@@ -205,19 +183,11 @@ export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
 
     try {
         req.body._id = req.decoded.id;
-        console.log('user request: ', req.body.becomeSellerRequest);
+        const requesterId = req.body._id
 
-        const becomeSellerRequest: BecomeSellerModel = {
-            addressInfo: req.body.becomeSellerRequest.addressInfo,
-            basicInfo: req.body.becomeSellerRequest.basicInfo,
-            validSocialNetworks: req.body.becomeSellerRequest.validSocialNetworks,
-            email: req.user.email,
-            requesterId: req.body._id
-        }
+        console.log('become seller request: ', requesterId);
 
-        console.log('become seller request: ', becomeSellerRequest);
-
-        const result = await updateBecomeSellerRequestSchema.validate(becomeSellerRequest);
+        const result = await updateBecomeSellerRequestSchema.validate({requesterId: requesterId});
 
         if (result.error) {
             throw<CustomResponse>{

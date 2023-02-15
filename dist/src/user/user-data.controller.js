@@ -39,25 +39,6 @@ const updateSocialNetworkSchema = joi_1.default.object().keys({
     _id: joi_1.default.string().required()
 });
 const updateBecomeSellerRequestSchema = joi_1.default.object().keys({
-    addressInfo: joi_1.default.object({
-        city: joi_1.default.string().required(),
-        country: joi_1.default.string().required(),
-        state: joi_1.default.string().required(),
-        streetOne: joi_1.default.string().required(),
-        streetTwo: joi_1.default.string().allow('').allow(null),
-        zip: joi_1.default.string().required()
-    }).required(),
-    basicInfo: joi_1.default.object({
-        firstname: joi_1.default.string().required(),
-        lastname: joi_1.default.string().required(),
-        phone: joi_1.default.string().allow(''),
-    }).required(),
-    email: joi_1.default.string().required(),
-    validSocialNetworks: joi_1.default.array().items(joi_1.default.object({
-        profile: joi_1.default.string().required(),
-        social: joi_1.default.string().required(),
-        status: joi_1.default.string().required()
-    })),
     requesterId: joi_1.default.string().required()
 });
 const UpdateBasicInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -192,16 +173,9 @@ exports.UpdateSocialNetwork = UpdateSocialNetwork;
 const UpdateBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         req.body._id = req.decoded.id;
-        console.log('user request: ', req.body.becomeSellerRequest);
-        const becomeSellerRequest = {
-            addressInfo: req.body.becomeSellerRequest.addressInfo,
-            basicInfo: req.body.becomeSellerRequest.basicInfo,
-            validSocialNetworks: req.body.becomeSellerRequest.validSocialNetworks,
-            email: req.user.email,
-            requesterId: req.body._id
-        };
-        console.log('become seller request: ', becomeSellerRequest);
-        const result = yield updateBecomeSellerRequestSchema.validate(becomeSellerRequest);
+        const requesterId = req.body._id;
+        console.log('become seller request: ', requesterId);
+        const result = yield updateBecomeSellerRequestSchema.validate({ requesterId: requesterId });
         if (result.error) {
             throw {
                 error: true,
@@ -238,11 +212,11 @@ const UpdateBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.UpdateBecomeSellerRequest = UpdateBecomeSellerRequest;
-const DeleteBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const DeleteBecomeSellerRequest = (req, res) => {
     console.log('deleting request: ', req.decoded.id);
     const requesterId = req.decoded.id;
     if (req.user.becomeSellerRequest === 'PENDING') {
-        yield become_seller_schema_1.BecomeSellerSchema.findOneAndDelete({ requesterId: requesterId }, (err, docs) => __awaiter(void 0, void 0, void 0, function* () {
+        become_seller_schema_1.BecomeSellerSchema.findOneAndDelete({ requesterId: requesterId }, (err, docs) => __awaiter(void 0, void 0, void 0, function* () {
             if (err) {
                 console.log("find one and delete error", err);
                 res.status(404).send({
@@ -252,12 +226,13 @@ const DeleteBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0
                 });
             }
             else {
-                console.log("Deleted : ", docs);
+                console.log("> deleting become a seller request");
                 const _id = new mongoose_1.default.Types.ObjectId(req.user._id);
                 const updateBecomeSellerRequest = {
                     becomeSellerRequest: null
                 };
                 yield user_schema_1.User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+                    console.log('> become a seller request deleted successfully');
                     res.status(200).send({
                         error: false,
                         message: 'become seller request updated',
@@ -274,7 +249,7 @@ const DeleteBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0
             status: 404
         });
     }
-});
+};
 exports.DeleteBecomeSellerRequest = DeleteBecomeSellerRequest;
 function updateProfile(isDelete, selectedSocial, socialToChange, current, newSocial) {
     if (selectedSocial !== socialToChange) {
