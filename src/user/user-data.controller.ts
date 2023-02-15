@@ -37,7 +37,7 @@ const updateBecomeSellerRequestSchema = Joi.object().keys({
         country: Joi.string().required(),
         state: Joi.string().required(),
         streetOne: Joi.string().required(),
-        streetTwo: Joi.string().allow(''),
+        streetTwo: Joi.string().allow('').allow(null),
         zip: Joi.string().required()
     }).required(),
 

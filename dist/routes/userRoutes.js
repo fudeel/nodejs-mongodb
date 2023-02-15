@@ -18,5 +18,6 @@ router.patch('/update-basic-info', cleanbody_1.cleanBody, validateToken_1.valida
 router.patch('/update-shipping-address-info', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateShippingAddressInfo);
 router.patch('/update-social-network', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateSocialNetwork);
 router.patch('/update-become-seller-request', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.UpdateBecomeSellerRequest);
+router.get('/delete-become-seller-request', cleanbody_1.cleanBody, validateToken_1.validateToken, user_data_controller_1.DeleteBecomeSellerRequest);
 exports.default = router;
 //# sourceMappingURL=userRoutes.js.map

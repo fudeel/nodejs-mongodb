@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateBecomeSellerRequest = exports.UpdateSocialNetwork = exports.UpdateShippingAddressInfo = exports.UpdateBasicInfo = void 0;
+exports.DeleteBecomeSellerRequest = exports.UpdateBecomeSellerRequest = exports.UpdateSocialNetwork = exports.UpdateShippingAddressInfo = exports.UpdateBasicInfo = void 0;
 const joi_1 = __importDefault(require("joi"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const user_schema_1 = require("../../schemas/user-schema");
+const become_seller_schema_1 = require("../../schemas/become-seller-schema");
 const updateBasicInfoSchema = joi_1.default.object().keys({
     firstname: joi_1.default.string().required(),
     lastname: joi_1.default.string().required(),
@@ -38,8 +39,26 @@ const updateSocialNetworkSchema = joi_1.default.object().keys({
     _id: joi_1.default.string().required()
 });
 const updateBecomeSellerRequestSchema = joi_1.default.object().keys({
-    isAskingBecomeSeller: joi_1.default.boolean().required().default(false),
-    _id: joi_1.default.string().required()
+    addressInfo: joi_1.default.object({
+        city: joi_1.default.string().required(),
+        country: joi_1.default.string().required(),
+        state: joi_1.default.string().required(),
+        streetOne: joi_1.default.string().required(),
+        streetTwo: joi_1.default.string().allow('').allow(null),
+        zip: joi_1.default.string().required()
+    }).required(),
+    basicInfo: joi_1.default.object({
+        firstname: joi_1.default.string().required(),
+        lastname: joi_1.default.string().required(),
+        phone: joi_1.default.string().allow(''),
+    }).required(),
+    email: joi_1.default.string().required(),
+    validSocialNetworks: joi_1.default.array().items(joi_1.default.object({
+        profile: joi_1.default.string().required(),
+        social: joi_1.default.string().required(),
+        status: joi_1.default.string().required()
+    })),
+    requesterId: joi_1.default.string().required()
 });
 const UpdateBasicInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('> updating user data');
@@ -171,32 +190,92 @@ const UpdateSocialNetwork = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.UpdateSocialNetwork = UpdateSocialNetwork;
 const UpdateBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    req.body._id = req.decoded.id;
-    const result = yield updateBecomeSellerRequestSchema.validate(req.body);
-    if (result.error) {
-        throw {
-            error: true,
-            message: result.error.message.toString(),
-            status: 500,
-            forceLogout: true
+    try {
+        req.body._id = req.decoded.id;
+        console.log('user request: ', req.body.becomeSellerRequest);
+        const becomeSellerRequest = {
+            addressInfo: req.body.becomeSellerRequest.addressInfo,
+            basicInfo: req.body.becomeSellerRequest.basicInfo,
+            validSocialNetworks: req.body.becomeSellerRequest.validSocialNetworks,
+            email: req.user.email,
+            requesterId: req.body._id
         };
-    }
-    else {
-        const _id = new mongoose_1.default.Types.ObjectId(req.user._id);
-        if (req.user.becomeSellerRequest !== 'PENDING' && req.user.becomeSellerRequest !== 'DENIED') {
-            const updateBecomeSellerRequest = {
-                becomeSellerRequest: req.body.isAskingBecomeSeller ? 'PENDING' : null
+        console.log('become seller request: ', becomeSellerRequest);
+        const result = yield updateBecomeSellerRequestSchema.validate(becomeSellerRequest);
+        if (result.error) {
+            throw {
+                error: true,
+                message: result.error.message.toString(),
+                status: 500,
+                forceLogout: true
             };
-            yield user_schema_1.User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
-                res.status(200).send({ error: false, message: 'become seller request updated', code: 200 });
-            });
         }
         else {
-            res.status(401).send({ error: true, message: 'user has already a pending or denied request', code: 401 });
+            const _id = new mongoose_1.default.Types.ObjectId(req.user._id);
+            if (req.user.becomeSellerRequest !== 'PENDING' && req.user.becomeSellerRequest !== 'DENIED') {
+                const updateBecomeSellerRequest = {
+                    becomeSellerRequest: 'PENDING'
+                };
+                const newBecomeSellerRequest = yield new become_seller_schema_1.BecomeSellerSchema(result.value);
+                newBecomeSellerRequest.save().then(() => __awaiter(void 0, void 0, void 0, function* () {
+                    console.log('>  new become seller request created on DB');
+                    yield user_schema_1.User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+                        res.status(200).send({ error: false, message: 'become seller request updated', code: 200 });
+                    });
+                })).catch(err => {
+                    console.log('X  Error in creating new become seller request on DB: ', err);
+                    res.status(400).send("There is already a request made from this user. If you are sure you did not have a pending request, contact the support team.");
+                });
+            }
+            else {
+                res.status(401).send({ error: true, message: 'user has already a pending or denied request', code: 401 });
+            }
         }
+    }
+    catch (error) {
+        console.log('error: ', error);
+        res.status(error.status).send(error);
     }
 });
 exports.UpdateBecomeSellerRequest = UpdateBecomeSellerRequest;
+const DeleteBecomeSellerRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('deleting request: ', req.decoded.id);
+    const requesterId = req.decoded.id;
+    if (req.user.becomeSellerRequest === 'PENDING') {
+        yield become_seller_schema_1.BecomeSellerSchema.findOneAndDelete({ requesterId: requesterId }, (err, docs) => __awaiter(void 0, void 0, void 0, function* () {
+            if (err) {
+                console.log("find one and delete error", err);
+                res.status(404).send({
+                    error: true,
+                    message: 'No pending become a seller request',
+                    status: 404
+                });
+            }
+            else {
+                console.log("Deleted : ", docs);
+                const _id = new mongoose_1.default.Types.ObjectId(req.user._id);
+                const updateBecomeSellerRequest = {
+                    becomeSellerRequest: null
+                };
+                yield user_schema_1.User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
+                    res.status(200).send({
+                        error: false,
+                        message: 'become seller request updated',
+                        code: 200
+                    });
+                });
+            }
+        }));
+    }
+    else {
+        res.status(404).send({
+            error: true,
+            message: 'No pending become a seller request',
+            status: 404
+        });
+    }
+});
+exports.DeleteBecomeSellerRequest = DeleteBecomeSellerRequest;
 function updateProfile(isDelete, selectedSocial, socialToChange, current, newSocial) {
     if (selectedSocial !== socialToChange) {
         // work around
