@@ -230,7 +230,7 @@ export const UpdateBecomeSellerRequest = async (req: any, res: Response) => {
 
                     const newBecomeSellerRequest = await new BecomeSellerSchema(result.value)
                     newBecomeSellerRequest.save().then(async () => {
-                        console.log('>  new become seller request created on DB');
+                        console.log('> new become seller request created on DB');
 
                         await User.findByIdAndUpdate(_id, updateBecomeSellerRequest).then(() => {
                             res.status(200).send(<CustomResponse>{error: false, message: 'become seller request updated', code: 200});
