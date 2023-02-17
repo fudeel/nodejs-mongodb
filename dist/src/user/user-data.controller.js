@@ -20,7 +20,7 @@ const become_seller_schema_1 = require("../../schemas/become-seller-schema");
 const updateBasicInfoSchema = joi_1.default.object().keys({
     firstname: joi_1.default.string().required(),
     lastname: joi_1.default.string().required(),
-    phone: joi_1.default.string().pattern(/^\+?\d{12}$/).allow(null).allow(''),
+    phone: joi_1.default.string().pattern(/^\+?\d{12}$/).allow(null, ''),
     _id: joi_1.default.string().required()
 });
 const shippingInfoSchema = joi_1.default.object().keys({
