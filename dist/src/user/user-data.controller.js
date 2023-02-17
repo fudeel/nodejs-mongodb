@@ -20,7 +20,7 @@ const become_seller_schema_1 = require("../../schemas/become-seller-schema");
 const updateBasicInfoSchema = joi_1.default.object().keys({
     firstname: joi_1.default.string().required(),
     lastname: joi_1.default.string().required(),
-    phone: joi_1.default.string(),
+    phone: joi_1.default.string().pattern(/^\+?\d{12}$/).allow(null).allow(''),
     _id: joi_1.default.string().required()
 });
 const shippingInfoSchema = joi_1.default.object().keys({
@@ -58,18 +58,8 @@ const UpdateBasicInfo = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
     else {
         console.log('> no errors');
-        if (!req.user.basicInfoAvailableToChange) {
-            console.log('> user already requested');
-            const customResponse = {
-                error: true,
-                forceLogout: true,
-                message: 'Are you doing something that you are not allowed to do? Please open a ticket if you need help',
-                status: 401
-            };
-            return res.status(customResponse.status).send(customResponse);
-        }
         const _id = new mongoose_1.default.Types.ObjectId(req.user._id);
-        const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone, basicInfoAvailableToChange: false };
+        const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone };
         yield user_schema_1.User.findByIdAndUpdate(_id, update).then(() => {
             res.status(200).send({ error: false, message: 'basic info updated', code: 200 });
         }).catch(err => {

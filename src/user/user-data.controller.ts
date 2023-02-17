@@ -9,7 +9,7 @@ import {BecomeSellerSchema} from "../../schemas/become-seller-schema";
 const updateBasicInfoSchema = Joi.object().keys({
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
-    phone: Joi.string().pattern(/^\+?\d{12}$/).allow(null).allow(''),
+    phone: Joi.string().pattern(/^\+?\d{12}$/).allow(null, ''),
     _id: Joi.string().required()
 });
 

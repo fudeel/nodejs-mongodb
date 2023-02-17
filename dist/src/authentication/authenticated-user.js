@@ -17,7 +17,7 @@ const getCurrentUserInfo = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (req.headers['accesstoken'] !== null && req.headers['accesstoken'] !== '') {
             try {
                 const accesstoken = req.headers['accesstoken'].split(" ")[1];
-                yield user_schema_1.User.find({ accesstoken }).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
+                yield user_schema_1.User.find({ accesstoken }).select('username firstname lastname phone email pic role sellingItems isCertified userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
                     if (!err) {
                         if (docs.length === 0) {
                             res.status(401).send({
