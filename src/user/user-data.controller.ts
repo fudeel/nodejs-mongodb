@@ -9,7 +9,7 @@ import {BecomeSellerSchema} from "../../schemas/become-seller-schema";
 const updateBasicInfoSchema = Joi.object().keys({
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
-    phone: Joi.string(),
+    phone: Joi.string().pattern(/^\+?\d{12}$/).allow(null).allow(''),
     _id: Joi.string().required()
 });
 
@@ -56,18 +56,8 @@ export const UpdateBasicInfo = async (req: any, res: Response) => {
     } else {
 
         console.log('> no errors')
-        if (!req.user.basicInfoAvailableToChange) {
-            console.log('> user already requested')
-            const customResponse: CustomResponse = {
-                error: true,
-                forceLogout: true,
-                message: 'Are you doing something that you are not allowed to do? Please open a ticket if you need help',
-                status: 401
-            }
-            return res.status(customResponse.status).send(customResponse);
-        }
         const _id = new mongoose.Types.ObjectId(req.user._id)
-        const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone, basicInfoAvailableToChange: false };
+        const update = { firstname: req.body.firstname, lastname: req.body.lastname, email: req.body.email, phone: req.body.phone};
 
         await User.findByIdAndUpdate(_id, update).then(() => {
             res.status(200).send(<CustomResponse>{error: false, message: 'basic info updated', code: 200});

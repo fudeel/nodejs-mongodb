@@ -8,7 +8,7 @@ export const getCurrentUserInfo = async (req: any, res: Response) => {
         if (req.headers['accesstoken'] !== null && req.headers['accesstoken'] !== '') {
             try {
                 const accesstoken: string = req.headers['accesstoken'].split(" ")[1];
-                await User.find({accesstoken}).select('username firstname lastname phone email pic role sellingItems isCertified basicInfoAvailableToChange userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
+                await User.find({accesstoken}).select('username firstname lastname phone email pic role sellingItems isCertified userMustInsertShippingAddress address socialNetwork becomeSellerRequest').exec((err, docs) => {
 
                     if (!err) {
 

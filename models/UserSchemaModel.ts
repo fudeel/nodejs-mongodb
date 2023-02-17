@@ -7,7 +7,6 @@ export interface UserSchemaModel {
     fullname: string;
     email: string;
     active: boolean;
-    basicInfoAvailableToChange: boolean;
     userMustInsertShippingAddress: boolean;
     password: string;
     resetPasswordToken: number | null;
